@@ -1,0 +1,33 @@
+{
+  "name": "pure-web",
+  "version": "1.0.3",
+  "description": "Web Modules for Pure Standards-based development",
+  "main": "./public/assets/js/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./spa": "./public/assets/js/spa.js",
+    "./ac": "./public/assets/js/autocomplete.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mvneerven/pure.git"
+  },
+  "scripts": {
+    "dev": "node esbuild-dev.js",
+    "build": "node esbuild-prd.js&tsc"
+  },
+  "dependencies": {
+    "lit": "^3.1.4",
+    "typescript": "^5.4.5",
+    "urlpattern-polyfill": "^6.0.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.0",
+    "esbuild-plugin-sass": "^1.0.1",
+    "eslint": "^9.2.0",
+    "eslint-plugin-lit": "^1.12.0",
+    "eslint-plugin-wc": "^2.1.0",
+    "glob": "^10.3.15",
+    "globals": "^15.2.0"
+  }
+}

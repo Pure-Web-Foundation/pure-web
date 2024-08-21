@@ -1,0 +1,23 @@
+@media only screen and (min-width: 601px) {
+  my-app {
+    grid-template-rows: 60px 1fr 40px;
+    grid-template-columns: 200px 1fr;
+
+    grid-template-areas:
+      "head head"
+      "menu main"
+      "foot foot";
+
+      aside {
+        menu{
+          flex-direction: column;
+
+          li{
+            margin-bottom: 1rem;
+          }
+        }
+      }
+
+
+  }
+}

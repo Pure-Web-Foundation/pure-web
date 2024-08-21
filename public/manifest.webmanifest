@@ -1,0 +1,11 @@
+{
+  "short_name": "PureForms",
+  "name": "Pure Forms",
+  "description": "Pure Forms - Declarative, Data Bound Forms ",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "/",
+  "start_url": "/?standalone=true",
+  "theme_color": "#abb3b7",
+  "background_color": "#FFFFFF"
+}
