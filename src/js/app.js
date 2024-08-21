@@ -1,10 +1,11 @@
 import { config } from "./app.config";
 import { AutoComplete } from "./autocomplete";
-import { parseHTML } from "./common";
+import { enhanceInputs, enhanceNavDropdownButton, parseHTML } from "./common";
 import { PureSPA } from "./spa";
 import { html } from "lit";
 import { ref, createRef } from "lit/directives/ref.js";
 import { polyfillsLoaded } from "./polyfills/polyfillsLoader";
+import "./svg-icon";
 
 customElements.define(
   "my-app",
@@ -17,6 +18,13 @@ customElements.define(
      */
     static get config() {
       return config;
+    }
+
+    constructor() {
+      super();
+
+      this.enhancers.add("[data-label]", enhanceInputs);
+      this.enhancers.add("button[data-dropdown]", enhanceNavDropdownButton);
     }
 
     async beforeRouting() {
@@ -76,7 +84,7 @@ customElements.define(
               return ["Pete", "Jane", "John", "Maria", "Robert", "Zack"]
                 .filter(fltr)
                 .map((i) => {
-                  return { text: i };
+                  return { text: i, description: "User name", icon: "menu" };
                 });
             },
           },

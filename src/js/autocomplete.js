@@ -62,6 +62,12 @@ export class AutoComplete {
     this.resultsDiv.addEventListener("mousedown", this.resultClick.bind(this));
     this.container.classList.add("ac-container");
     this.input.classList.add("ac-input");
+    const inputStyle =getComputedStyle(this.input);
+    this.container.style.setProperty("--ac-bg-default", inputStyle.backgroundColor);
+    this.container.style.setProperty("--ac-color-default", inputStyle.color);
+    const acc = getComputedStyle(this.input).accentColor;
+    if(acc!=="auto")
+      this.container.style.setProperty("--ac-accent-color", acc);
 
     (this.container?.shadowRoot ?? this.container).appendChild(this.resultsDiv);
 

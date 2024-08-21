@@ -1,4 +1,11 @@
 /**
+ * Returns a contextual unique identifier with the given prefix
+ * @param {String} prefix
+ * @param {Number} radix
+ * @returns { String} unique identifier
+ */
+export function getUniqueName(prefix?: string, radix?: number): string;
+/**
  * Generates an HTML NodeList by parsing the given HTML string
  * @param {String} html
  * @returns {NodeListOf<ChildNode>} DOM element
@@ -29,3 +36,11 @@ export function isUrl(str: string): boolean;
  * @returns window handle reference
  */
 export function openCenteredWindow(url: string, width: number, height: number): Window | null;
+/**
+ * Enhance inputs from simple syntax to the syntax described in the input story.
+ *
+ * @param {HTMLElement|Document|null} root On which root element we should apply it.
+ */
+export function enhanceInputs(root?: HTMLElement | Document | null): void;
+export function enhanceNavDropdownButton(nav: any): string;
+export function friendlyElement(element: any): string;

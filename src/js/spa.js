@@ -1,5 +1,6 @@
 import { html, LitElement, css } from "lit";
 import { until } from "lit/directives/until.js";
+import { friendlyElement } from "./common";
 
 //#region Constants
 
@@ -286,8 +287,12 @@ class PureSPAEnhancementRegistry {
   }
 
   run(element) {
+    const length = this.#list.size;
+
+    console.log(`${length} enhancers running on ${friendlyElement(element)}`);
+
     for (const [selector, fn] of this.#list) {
-      const nodes = element.querySelectorAll(selector);
+      const nodes = [...element.querySelectorAll(selector), ...[element]];
 
       for (const node of nodes) {
         if (!node.hasAttribute("data-enhanced")) {
@@ -436,7 +441,9 @@ export class PureSPA extends LitElement {
    * Subclass this
    */
   async beforeRouting() {
-    console.warn("Subclass async beforeRouting() to load polyfills and do other async initialzation")
+    console.warn(
+      "Subclass async beforeRouting() to load polyfills and do other async initialzation"
+    );
   }
 
   #getRoute(urlString) {
@@ -536,17 +543,30 @@ export class PureSPA extends LitElement {
     </section>`;
   }
 
-  updated() {
-    super.updated();
+  // updated() {
+  //   super.updated();
 
-    this.waitForFullRendering();
-  }
+  //   //this.waitForFullRendering();
+  // }
 
-  async waitForFullRendering() {
-    await this.getUpdateComplete();
-    setTimeout(() => {
-      this.enhancers.run(this);
-    }, 1);
+  // async waitForFullRendering() {
+  //   await this.getUpdateComplete();
+  //   setTimeout(() => {
+  //     this.enhancers.run(this);
+  //   }, 1);
+  // }
+
+  firstUpdated() {
+    const me = this;
+    new MutationObserver((mutationsList) => {
+      for (let mutation of mutationsList) {
+        if (mutation.type === "childList") {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) me.enhancers.run(node);
+          }
+        }
+      }
+    }).observe(this, { childList: true, subtree: true });
   }
 
   /**

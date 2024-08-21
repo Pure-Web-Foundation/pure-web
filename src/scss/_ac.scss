@@ -1,10 +1,11 @@
 :root {
   --ac-grid-default: 45px 1fr 80px;
   --ac-bg-default: #efefef;
-  --ac-color-default: 333;
-  --ac-accent-color: #f68;
+  --ac-color-default: #333;
+  --ac-accent-color-default: #f68;
   --ac-rad: 1rem;
   --ac-box-shadow: 1px 1px 10px rgba(0, 0, 0, .1) --ac-margin: 0;
+  --ac-icon-fill-default: var(--ac-accent-color-default);
 }
 
 .ac-container {
@@ -63,7 +64,7 @@
       padding: .8rem .3rem;
 
       svg-icon {
-        --icon-fill-color: var(--color-accent-300);
+        --icon-fill-color: var(--ac-icon-fill, var(--ac-accent-color-default));
       }
 
       small {
@@ -74,7 +75,7 @@
       &.selected {
         transition: all 0.1s;
         font-weight: unset;
-        background-color: var(--ac-accent-color);
+        background-color: var(--accent-color, var(--ac-accent-color-default));
         color: var(--ac-bg);
 
         svg-icon {
@@ -89,11 +90,7 @@
           color: inherit
         }
       }
-
-
     }
-
-
   }
 
   &.ac-active {
@@ -136,7 +133,6 @@
         }
       }
     }
-
   }
 }
 

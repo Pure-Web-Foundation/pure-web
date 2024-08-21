@@ -80,8 +80,7 @@ export class PureSPA {
      * Subclass this to set the 404 page
      */
     get notFoundPage(): any;
-    updated(): void;
-    waitForFullRendering(): Promise<void>;
+    firstUpdated(): void;
     /**
      * Sublass this to set the loading page html.
      */

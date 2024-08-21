@@ -1,12 +1,13 @@
 {
   "name": "pure-web",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Web Modules for Pure Standards-based development",
   "main": "./public/assets/js/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     "./spa": "./public/assets/js/spa.js",
-    "./ac": "./public/assets/js/autocomplete.js"
+    "./ac": "./public/assets/js/autocomplete.js",
+    "./svg-icon": "./public/assets/js/svg-icon.js"
   },
   "repository": {
     "type": "git",
