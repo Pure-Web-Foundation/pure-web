@@ -1,4 +1,13 @@
-# PureSPA
+# pure-web - essential components for Modern Web Development
+```cli
+  npm i pure-web --save-dev
+```
+
+# PureSPA class
+
+```js
+import { PureSPA } from "pure-web/spa";
+```
 
 A routing Lit container (Light DOM) _Base Class_ for modern Web Component-based SPA apps.
 
@@ -8,7 +17,6 @@ A routing Lit container (Light DOM) _Base Class_ for modern Web Component-based 
 
 ## Main Ingredients
 
-
 - A (Light DOM) [Lit](https://lit.dev/) Element base class to base your apps on.
 - Using the [URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) class to match routes and pass dynamic route data.
 - Using [View Transitions](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) when switching between routes.
@@ -17,10 +25,6 @@ A routing Lit container (Light DOM) _Base Class_ for modern Web Component-based 
 > Because PureSPA uses relatively new Browser APIs, *polyfills* are provided for functionality that is not yet available in some browsers, like Safari and Firefox.
 
 ## Getting started
-
-```cli
-  npm i pure-spa --savedev
-```
 
 Create a class that extends `PureSPA`, and return a router config in the static `config` property:
 
@@ -157,3 +161,43 @@ In this case, the `PageProfile` class can retrieve the captured route data using
 
 As you can see in the example above, if you use this subroute syntax, the parent route's configured component will also be triggered for the sub route.
 
+
+# AutoComplete class
+
+```js
+import { AutoComplete } from "pure-web/ac";
+```
+
+```css
+@import "<your node modules prefix>/src/scss/autocomplete";
+```
+...or...
+```css
+@import "<your node modules prefix>/public/assets/css/autocomplete.css";
+```
+
+## Usage
+
+```html
+  <!-- Lit code -->
+  <input @focus=${e => AutoComplete.attach(e, this.acOptions )}/>
+```
+... or ...
+```js
+  const input = document.querySelector("#omnibox");
+  input.addEventListener("focus", e=>{
+    AutoComplete.attach(e, this.acOptions )
+  })
+```
+
+```js
+  get acOptions() {
+    return {
+      categories: {
+        Menu: {
+          // category handling 
+        }
+      }
+    }
+  }
+```
