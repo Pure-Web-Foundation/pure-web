@@ -16,7 +16,7 @@
 }
 @media only screen and (min-width: 601px) {
   my-app {
-    grid-template-rows: 60px 1fr 40px;
+    grid-template-rows: var(--header-height) 1fr var(--footer-height);
     grid-template-columns: 200px 1fr;
     grid-template-areas: "head head" "menu main" "foot foot";
   }
@@ -25,6 +25,10 @@
   }
   my-app aside menu li {
     margin-bottom: 1rem;
+    padding: 0;
+  }
+  my-app aside menu li a {
+    display: inline-block;
   }
 }
 :root {
@@ -41,7 +45,7 @@
   background-color: transparent;
   max-height: var(--ac-max-height, var(--ac-margin-default));
   position: absolute;
-  z-index: 3;
+  z-index: 99;
   left: 0px;
   padding: 0;
   border-radius: 0 0 1rem 1rem;
@@ -152,6 +156,405 @@
     color: white;
   }
 }
+label:has(input[type=text]),
+label:has(input[type=email]),
+label:has(input[type=number]),
+label:has(input[type=password]),
+label:has(input[type=url]),
+label:has(input[type=tel]),
+label:has(input[type=search]),
+label:has(input[type=date]),
+label:has(select) {
+  position: relative;
+  display: block;
+}
+label:has(input[type=text]) > span[data-label],
+label:has(input[type=email]) > span[data-label],
+label:has(input[type=number]) > span[data-label],
+label:has(input[type=password]) > span[data-label],
+label:has(input[type=url]) > span[data-label],
+label:has(input[type=tel]) > span[data-label],
+label:has(input[type=search]) > span[data-label],
+label:has(input[type=date]) > span[data-label],
+label:has(select) > span[data-label] {
+  display: inline-block;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  padding: 0 5px;
+  transform: translateY(-50%);
+  left: var(--gutter-small);
+  will-change: top, left;
+  transition: all 0.2s ease;
+  text-wrap: nowrap;
+  border-radius: 1rem;
+  z-index: 1;
+}
+label:has(input[type=text]):has([required]) > span::after,
+label:has(input[type=email]):has([required]) > span::after,
+label:has(input[type=number]):has([required]) > span::after,
+label:has(input[type=password]):has([required]) > span::after,
+label:has(input[type=url]):has([required]) > span::after,
+label:has(input[type=tel]):has([required]) > span::after,
+label:has(input[type=search]):has([required]) > span::after,
+label:has(input[type=date]):has([required]) > span::after,
+label:has(select):has([required]) > span::after {
+  content: "*";
+  position: absolute;
+  color: var(--color-accent, red);
+  top: -20%;
+}
+label:has(input[type=text]) input,
+label:has(input[type=text]) select,
+label:has(input[type=email]) input,
+label:has(input[type=email]) select,
+label:has(input[type=number]) input,
+label:has(input[type=number]) select,
+label:has(input[type=password]) input,
+label:has(input[type=password]) select,
+label:has(input[type=url]) input,
+label:has(input[type=url]) select,
+label:has(input[type=tel]) input,
+label:has(input[type=tel]) select,
+label:has(input[type=search]) input,
+label:has(input[type=search]) select,
+label:has(input[type=date]) input,
+label:has(input[type=date]) select,
+label:has(select) input,
+label:has(select) select {
+  padding: 0.75rem 1.6rem;
+  margin: 0;
+  line-height: 26px;
+}
+label:has(input[type=text]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=text]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=email]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=email]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=number]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=number]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=password]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=password]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=url]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=url]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=tel]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=tel]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=search]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=search]):has(span[data-label]) select::-moz-placeholder, label:has(input[type=date]):has(span[data-label]) input::-moz-placeholder, label:has(input[type=date]):has(span[data-label]) select::-moz-placeholder, label:has(select):has(span[data-label]) input::-moz-placeholder, label:has(select):has(span[data-label]) select::-moz-placeholder {
+  opacity: 0;
+}
+label:has(input[type=text]):has(span[data-label]) input::placeholder,
+label:has(input[type=text]):has(span[data-label]) select::placeholder,
+label:has(input[type=email]):has(span[data-label]) input::placeholder,
+label:has(input[type=email]):has(span[data-label]) select::placeholder,
+label:has(input[type=number]):has(span[data-label]) input::placeholder,
+label:has(input[type=number]):has(span[data-label]) select::placeholder,
+label:has(input[type=password]):has(span[data-label]) input::placeholder,
+label:has(input[type=password]):has(span[data-label]) select::placeholder,
+label:has(input[type=url]):has(span[data-label]) input::placeholder,
+label:has(input[type=url]):has(span[data-label]) select::placeholder,
+label:has(input[type=tel]):has(span[data-label]) input::placeholder,
+label:has(input[type=tel]):has(span[data-label]) select::placeholder,
+label:has(input[type=search]):has(span[data-label]) input::placeholder,
+label:has(input[type=search]):has(span[data-label]) select::placeholder,
+label:has(input[type=date]):has(span[data-label]) input::placeholder,
+label:has(input[type=date]):has(span[data-label]) select::placeholder,
+label:has(select):has(span[data-label]) input::placeholder,
+label:has(select):has(span[data-label]) select::placeholder {
+  opacity: 0;
+}
+label:has(input[type=text]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=text]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=email]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=email]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=number]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=number]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=password]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=password]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=url]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=url]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=tel]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=tel]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=search]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=search]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=date]):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=date]):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(select):has(input:not(:focus):not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(select):has(select:not(:-moz-placeholder-shown)) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=email]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=number]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=password]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=url]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=tel]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=search]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(input[type=date]):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label], label:has(select):has(input:not(:-moz-placeholder-shown)) label:has(select):has(select:focus) span[data-label] {
+  background-color: white;
+  font-size: smaller;
+  top: 0;
+  will-change: top, left;
+  -moz-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  text-wrap: nowrap;
+  z-index: 1;
+}
+label:has(input[type=text]):has(input:focus) span[data-label], label:has(input[type=text]):has(input:not(:focus):not(:placeholder-shown)) span[data-label], label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label], label:has(input[type=text]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=email]):has(input:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=number]):has(input:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=password]):has(input:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=url]):has(input:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=tel]):has(input:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=search]):has(input:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=date]):has(input:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(select:not(:placeholder-shown)) span[data-label],
+label:has(select):has(input:focus) span[data-label],
+label:has(select):has(input:not(:focus):not(:placeholder-shown)) span[data-label],
+label:has(input[type=text]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(select):has(select:not(:placeholder-shown)) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=email]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=number]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=password]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=url]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=tel]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=search]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(input[type=date]):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=text]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=email]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=number]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=password]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=url]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=tel]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=search]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(input[type=date]):has(select:focus) span[data-label],
+label:has(select):has(input:not(:placeholder-shown)) label:has(select):has(select:focus) span[data-label] {
+  background-color: white;
+  font-size: smaller;
+  top: 0;
+  will-change: top, left;
+  transition: all 0.2s ease;
+  text-wrap: nowrap;
+  z-index: 1;
+}
+label:has(input[type=text]):has(input:focus) input,
+label:has(input[type=text]):has(input:focus) select, label:has(input[type=text]):has(select:focus) input,
+label:has(input[type=text]):has(select:focus) select,
+label:has(input[type=email]):has(input:focus) input,
+label:has(input[type=email]):has(input:focus) select,
+label:has(input[type=email]):has(select:focus) input,
+label:has(input[type=email]):has(select:focus) select,
+label:has(input[type=number]):has(input:focus) input,
+label:has(input[type=number]):has(input:focus) select,
+label:has(input[type=number]):has(select:focus) input,
+label:has(input[type=number]):has(select:focus) select,
+label:has(input[type=password]):has(input:focus) input,
+label:has(input[type=password]):has(input:focus) select,
+label:has(input[type=password]):has(select:focus) input,
+label:has(input[type=password]):has(select:focus) select,
+label:has(input[type=url]):has(input:focus) input,
+label:has(input[type=url]):has(input:focus) select,
+label:has(input[type=url]):has(select:focus) input,
+label:has(input[type=url]):has(select:focus) select,
+label:has(input[type=tel]):has(input:focus) input,
+label:has(input[type=tel]):has(input:focus) select,
+label:has(input[type=tel]):has(select:focus) input,
+label:has(input[type=tel]):has(select:focus) select,
+label:has(input[type=search]):has(input:focus) input,
+label:has(input[type=search]):has(input:focus) select,
+label:has(input[type=search]):has(select:focus) input,
+label:has(input[type=search]):has(select:focus) select,
+label:has(input[type=date]):has(input:focus) input,
+label:has(input[type=date]):has(input:focus) select,
+label:has(input[type=date]):has(select:focus) input,
+label:has(input[type=date]):has(select:focus) select,
+label:has(select):has(input:focus) input,
+label:has(select):has(input:focus) select,
+label:has(select):has(select:focus) input,
+label:has(select):has(select:focus) select {
+  border-color: var(--color-primary-000);
+}
+label:has(input[type=text]):has(input:focus) input::-moz-placeholder, label:has(input[type=text]):has(input:focus) select::-moz-placeholder, label:has(input[type=text]):has(select:focus) input::-moz-placeholder, label:has(input[type=text]):has(select:focus) select::-moz-placeholder, label:has(input[type=email]):has(input:focus) input::-moz-placeholder, label:has(input[type=email]):has(input:focus) select::-moz-placeholder, label:has(input[type=email]):has(select:focus) input::-moz-placeholder, label:has(input[type=email]):has(select:focus) select::-moz-placeholder, label:has(input[type=number]):has(input:focus) input::-moz-placeholder, label:has(input[type=number]):has(input:focus) select::-moz-placeholder, label:has(input[type=number]):has(select:focus) input::-moz-placeholder, label:has(input[type=number]):has(select:focus) select::-moz-placeholder, label:has(input[type=password]):has(input:focus) input::-moz-placeholder, label:has(input[type=password]):has(input:focus) select::-moz-placeholder, label:has(input[type=password]):has(select:focus) input::-moz-placeholder, label:has(input[type=password]):has(select:focus) select::-moz-placeholder, label:has(input[type=url]):has(input:focus) input::-moz-placeholder, label:has(input[type=url]):has(input:focus) select::-moz-placeholder, label:has(input[type=url]):has(select:focus) input::-moz-placeholder, label:has(input[type=url]):has(select:focus) select::-moz-placeholder, label:has(input[type=tel]):has(input:focus) input::-moz-placeholder, label:has(input[type=tel]):has(input:focus) select::-moz-placeholder, label:has(input[type=tel]):has(select:focus) input::-moz-placeholder, label:has(input[type=tel]):has(select:focus) select::-moz-placeholder, label:has(input[type=search]):has(input:focus) input::-moz-placeholder, label:has(input[type=search]):has(input:focus) select::-moz-placeholder, label:has(input[type=search]):has(select:focus) input::-moz-placeholder, label:has(input[type=search]):has(select:focus) select::-moz-placeholder, label:has(input[type=date]):has(input:focus) input::-moz-placeholder, label:has(input[type=date]):has(input:focus) select::-moz-placeholder, label:has(input[type=date]):has(select:focus) input::-moz-placeholder, label:has(input[type=date]):has(select:focus) select::-moz-placeholder, label:has(select):has(input:focus) input::-moz-placeholder, label:has(select):has(input:focus) select::-moz-placeholder, label:has(select):has(select:focus) input::-moz-placeholder, label:has(select):has(select:focus) select::-moz-placeholder {
+  opacity: 1;
+}
+label:has(input[type=text]):has(input:focus) input::placeholder,
+label:has(input[type=text]):has(input:focus) select::placeholder, label:has(input[type=text]):has(select:focus) input::placeholder,
+label:has(input[type=text]):has(select:focus) select::placeholder,
+label:has(input[type=email]):has(input:focus) input::placeholder,
+label:has(input[type=email]):has(input:focus) select::placeholder,
+label:has(input[type=email]):has(select:focus) input::placeholder,
+label:has(input[type=email]):has(select:focus) select::placeholder,
+label:has(input[type=number]):has(input:focus) input::placeholder,
+label:has(input[type=number]):has(input:focus) select::placeholder,
+label:has(input[type=number]):has(select:focus) input::placeholder,
+label:has(input[type=number]):has(select:focus) select::placeholder,
+label:has(input[type=password]):has(input:focus) input::placeholder,
+label:has(input[type=password]):has(input:focus) select::placeholder,
+label:has(input[type=password]):has(select:focus) input::placeholder,
+label:has(input[type=password]):has(select:focus) select::placeholder,
+label:has(input[type=url]):has(input:focus) input::placeholder,
+label:has(input[type=url]):has(input:focus) select::placeholder,
+label:has(input[type=url]):has(select:focus) input::placeholder,
+label:has(input[type=url]):has(select:focus) select::placeholder,
+label:has(input[type=tel]):has(input:focus) input::placeholder,
+label:has(input[type=tel]):has(input:focus) select::placeholder,
+label:has(input[type=tel]):has(select:focus) input::placeholder,
+label:has(input[type=tel]):has(select:focus) select::placeholder,
+label:has(input[type=search]):has(input:focus) input::placeholder,
+label:has(input[type=search]):has(input:focus) select::placeholder,
+label:has(input[type=search]):has(select:focus) input::placeholder,
+label:has(input[type=search]):has(select:focus) select::placeholder,
+label:has(input[type=date]):has(input:focus) input::placeholder,
+label:has(input[type=date]):has(input:focus) select::placeholder,
+label:has(input[type=date]):has(select:focus) input::placeholder,
+label:has(input[type=date]):has(select:focus) select::placeholder,
+label:has(select):has(input:focus) input::placeholder,
+label:has(select):has(input:focus) select::placeholder,
+label:has(select):has(select:focus) input::placeholder,
+label:has(select):has(select:focus) select::placeholder {
+  opacity: 1;
+}
+
+html[data-transition=forwards] :root,
+html[data-transition=backwards] :root {
+  view-transition-name: none;
+}
+html[data-transition=forwards]::view-transition-new(main), html[data-transition=forwards]::view-transition-old(main), html[data-transition=forwards]::view-transition-new(footer-content),
+html[data-transition=backwards]::view-transition-new(main),
+html[data-transition=backwards]::view-transition-old(main),
+html[data-transition=backwards]::view-transition-new(footer-content) {
+  animation-duration: 300ms;
+}
+html[data-transition=forwards]::view-transition-new(footer-content), html[data-transition=forwards]::view-transition-new(top-bar),
+html[data-transition=backwards]::view-transition-new(footer-content),
+html[data-transition=backwards]::view-transition-new(top-bar) {
+  animation-name: steady;
+}
+
+html[data-transition=forwards]::view-transition-old(main)::view-transition-old(main) {
+  animation-name: shrink;
+  transform-origin: 100% 50%;
+}
+html[data-transition=forwards]::view-transition-new(main) {
+  animation-name: slide-in-from-right;
+  background: var(--color-primary-100);
+}
+
+html[data-transition=backwards]::view-transition-old(main) {
+  animation-name: slide-out-to-right;
+  z-index: 1;
+  background: var(--color-primary-100);
+}
+html[data-transition=backwards]::view-transition-new(main) {
+  animation-name: fade-in;
+  transform-origin: 100% 50%;
+}
+
+@keyframes steady {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slide-in-from-left {
+  from {
+    translate: -100vw 0;
+  }
+}
+@keyframes slide-in-from-right {
+  from {
+    translate: 100vw 0;
+  }
+}
+@keyframes slide-out-to-left {
+  to {
+    translate: -100vw 0;
+  }
+}
+@keyframes slide-out-to-right {
+  to {
+    translate: 100vw 0;
+  }
+}
+@keyframes shrink {
+  to {
+    scale: 0.8;
+    opacity: 0.5;
+  }
+}
+@keyframes grow {
+  from {
+    scale: 0.8;
+    opacity: 0.5;
+  }
+}
+@keyframes slide-in {
+  from {
+    translate: 100vw 0;
+  }
+}
+@keyframes slide-out {
+  to {
+    translate: 100vw 0;
+  }
+}
+@keyframes scale-up {
+  from {
+    scale: 0;
+  }
+}
+@keyframes scale-down {
+  to {
+    scale: 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
 :root {
   --accent-color: #219f38;
   --header-height: 100px;
@@ -166,6 +569,7 @@
   --button-background: var(--accent-color);
   --button-background-hover: #ca2c6b;
   --button-icon-color: #fff;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -196,6 +600,7 @@ my-app {
   display: grid;
 }
 my-app header {
+  z-index: 10;
   grid-area: head;
   padding: 1rem;
 }
@@ -279,4 +684,58 @@ aside menu a {
 }
 #omnibox span[data-label] > input {
   width: 60px;
+}
+
+.tiles {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.tiles .item {
+  border-radius: 1rem;
+  background-color: #ffffff;
+}
+.tiles .photothumb {
+  width: 100%;
+}
+.tiles .title {
+  border-radius: 1rem 1rem 0 0;
+  padding: 20px;
+}
+.tiles .title h3 {
+  font-size: 1.2em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+.tiles .project .title {
+  background-color: #607D8B;
+}
+.tiles .blog .title {
+  background-color: #ff9800;
+}
+.tiles .photo .title {
+  background-color: #f44336;
+}
+.tiles .desc {
+  padding: 10px 10px 5px 10px;
+}
+.tiles .desc img {
+  width: 50%;
+  margin: 0 10px 10px 0;
+  float: left;
+}
+.tiles .desc p {
+  margin-bottom: 10px;
+}
+
+main {
+  view-transition-name: main;
+}
+
+footer {
+  view-transition-name: footer-content;
+}
+
+header {
+  view-transition-name: top-bar;
 }/*# sourceMappingURL=main.css.map */

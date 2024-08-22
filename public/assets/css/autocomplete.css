@@ -12,7 +12,7 @@
   background-color: transparent;
   max-height: var(--ac-max-height, var(--ac-margin-default));
   position: absolute;
-  z-index: 3;
+  z-index: 99;
   left: 0px;
   padding: 0;
   border-radius: 0 0 1rem 1rem;

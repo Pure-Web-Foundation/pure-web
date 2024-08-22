@@ -1,0 +1,80 @@
+label:has(input[type=text]),
+label:has(input[type=email]),
+label:has(input[type=number]),
+label:has(input[type=password]),
+label:has(input[type=url]),
+label:has(input[type=tel]),
+label:has(input[type=search]),
+label:has(input[type=date]),
+label:has(select) {
+  position: relative;
+  display: block;
+
+  >span[data-label] {
+    display: inline-block;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    padding: 0 5px;
+    transform: translateY(-50%);
+    left: var(--gutter-small);
+    will-change: top, left;
+    transition: all 0.2s ease;
+    text-wrap: nowrap;
+    border-radius: 1rem;
+    z-index: 1;
+  }
+
+  &:has([required])>span::after {
+    content: "*";
+    position: absolute;
+    color: var(--color-accent, red);
+    top: -20%;
+  }
+
+  input,
+  select {
+
+    padding: 0.75rem 1.6rem;
+    margin: 0;
+    line-height: 26px;
+  }
+
+  &:has(span[data-label]) {
+
+    input,
+    select {
+      &::placeholder {
+        opacity: 0;
+      }
+    }
+  }
+
+  &:has(input:focus),
+  &:has(input:not(:focus):not(:placeholder-shown)),
+  &:has(input:not(:placeholder-shown)) &:has(select:focus),
+  &:has(select:not(:placeholder-shown)) {
+    span[data-label] {
+      background-color: white;
+      font-size: smaller;
+      top: 0;
+      will-change: top, left;
+      transition: all 0.2s ease;
+      text-wrap: nowrap;
+      z-index: 1;
+    }
+  }
+
+  &:has(input:focus),
+  &:has(select:focus) {
+
+    input,
+    select {
+      border-color: var(--color-primary-000);
+
+      &::placeholder {
+        opacity: 1;
+      }
+    }
+  }
+}

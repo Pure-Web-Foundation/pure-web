@@ -1,6 +1,5 @@
 import { html, LitElement, css } from "lit";
 import { until } from "lit/directives/until.js";
-import { friendlyElement } from "./common";
 
 //#region Constants
 
@@ -54,7 +53,7 @@ class PureSPAConfig {
 
   readConfig() {
     if (!isWellFormedConfig(this.#rawConfig))
-      throw Error("Config mising or malformed");
+      throw Error("PureSPA static config property mising or malformed.");
 
     const createRender = (path, tagName, widget, properties) => {
       return (routeData) => {
@@ -288,27 +287,30 @@ class PureSPAEnhancementRegistry {
 
   run(element) {
     const length = this.#list.size;
-
-    console.log(`${length} enhancers running on ${friendlyElement(element)}`);
-
+    if (length === 0) return;
     for (const [selector, fn] of this.#list) {
-      const nodes = [...element.querySelectorAll(selector), ...[element]];
+      const enhance = (n, s, fn) => {
+        if (n.hasAttribute("data-enhanced")) return;
+        const result = fn(n);
+        n.setAttribute("data-enhanced", result?.toString() ?? "");
+      };
 
-      for (const node of nodes) {
-        if (!node.hasAttribute("data-enhanced")) {
-          const result = fn(node);
-          node.setAttribute("data-enhanced", result?.toString() ?? "");
-        }
-      }
+      if (element.matches(selector)) enhance(element, selector, fn);
+
+      const nodes = [...element.querySelectorAll(selector)];
+
+      for (const node of nodes) enhance(node, selector, fn);
     }
   }
 }
 
 /**
- * Lit base class for SPA routing.
+ * Light-DOM Lit Container Base Class for SPA routing.
  *
  * - Uses URLPattern for routing with expressions
- * -
+ * - Uses View Transitions between routes
+ * - Uses Navigator.navigate Event for route switching
+ * - Facilitates Progressive enhancement by applying your enhancement rules at DOM changes
  */
 export class PureSPA extends LitElement {
   #config;
@@ -328,12 +330,15 @@ export class PureSPA extends LitElement {
       this.#config = new PureSPAConfig(this.constructor.config); // take static config() property from implementing class
       this.#setGlobalAttributes();
 
-      this.routerReady = this.initializeRouting(); // Compile url patterns
+      this.routerReady = this.#initializeRouting(); // Compile url patterns
     } catch (ex) {
       console.error("Configuration error: ", ex.toString());
     }
   }
 
+  /**
+   * @returns { PureSPAEnhancementRegistry } enhancers registry
+   */
   get enhancers() {
     return this.#enhancers;
   }
@@ -345,7 +350,7 @@ export class PureSPA extends LitElement {
     return this.#config;
   }
 
-  async initializeRouting() {
+  async #initializeRouting() {
     const me = this;
     //await polyfillsLoaded; //Make sure that polyfills are loaded before using URLPattern API
 
@@ -376,6 +381,8 @@ export class PureSPA extends LitElement {
       const route = this.#getRoute(event.destination.url);
       if (!route) return;
 
+      document.documentElement.dataset.transition = this.getTransitionType();
+
       event.intercept({
         async handler() {
           document.startViewTransition(() => {
@@ -398,7 +405,26 @@ export class PureSPA extends LitElement {
   }
 
   /**
-   * get active route
+   * Gets the transition type for the view transition,
+   * by comparing the current and future URLs.
+   */
+  getTransitionType() {
+    const getDirection = (currentPath, newPath) => {
+      if (newPath === currentPath) return;
+      if (newPath.startsWith(currentPath)) return "forwards";
+      else if (currentPath.startsWith(newPath)) return "backwards";
+    };
+
+    const cUrl = (u) => {
+      const url = new URL(u);
+      return url.pathname + url.hash;
+    };
+
+    return getDirection(cUrl(location.href), cUrl(event.destination.url));
+  }
+
+  /**
+   * Gets the active route
    */
   get activeRoute() {
     return this.#currentRoute;
@@ -543,18 +569,16 @@ export class PureSPA extends LitElement {
     </section>`;
   }
 
-  // updated() {
-  //   super.updated();
+  updated() {
+    super.updated();
 
-  //   //this.waitForFullRendering();
-  // }
+    this.waitForFullRendering();
+  }
 
-  // async waitForFullRendering() {
-  //   await this.getUpdateComplete();
-  //   setTimeout(() => {
-  //     this.enhancers.run(this);
-  //   }, 1);
-  // }
+  async waitForFullRendering() {
+    await this.getUpdateComplete();
+    this.enhancers.run(this);
+  }
 
   firstUpdated() {
     const me = this;

@@ -1,6 +1,9 @@
 @import "./mobile";
 @import "./responsive";
 @import "./ac";
+@import "./form";
+@import "./view-transitions";
+
 
 :root {
   --accent-color: #219f38;
@@ -16,6 +19,7 @@
   --button-background: var(--accent-color);
   --button-background-hover: #ca2c6b;
   --button-icon-color: #fff;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -48,6 +52,7 @@ my-app {
 
 
   header {
+    z-index: 10;
     grid-area: head;
     padding: 1rem
   }
@@ -143,4 +148,68 @@ aside {
       width: 60px
     }
   }
+}
+
+.tiles {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+  .item {
+    border-radius: 1rem;
+    background-color: #ffffff;
+  }
+
+  .photothumb {
+    width: 100%;
+  }
+
+  .title {
+    border-radius: 1rem 1rem 0 0;
+    padding: 20px;
+  }
+
+  .title h3 {
+    font-size: 1.2em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+
+  .project .title {
+    background-color: #607D8B;
+  }
+
+  .blog .title {
+    background-color: #ff9800;
+  }
+
+  .photo .title {
+    background-color: #f44336;
+  }
+
+  .desc {
+    padding: 10px 10px 5px 10px;
+  }
+
+  .desc img {
+    width: 50%;
+    margin: 0 10px 10px 0;
+    float: left;
+  }
+
+  .desc p {
+    margin-bottom: 10px;
+  }
+}
+
+main {
+  view-transition-name: main;
+}
+
+footer {
+  view-transition-name: footer-content;
+}
+
+header {
+  view-transition-name: top-bar;
 }

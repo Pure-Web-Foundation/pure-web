@@ -1,0 +1,118 @@
+html[data-transition="forwards"],
+html[data-transition="backwards"] {
+    :root {
+        view-transition-name: none;
+    }
+
+    &::view-transition-new(main),
+    &::view-transition-old(main),
+    &::view-transition-new(footer-content) {
+        animation-duration: 300ms;
+    }
+
+    &::view-transition-new(footer-content),
+		&::view-transition-new(top-bar) {
+        animation-name: steady;
+    }
+}
+
+html[data-transition="forwards"] {
+
+    &::view-transition-old(main) {
+		&::view-transition-old(main) {
+			animation-name: shrink;
+			transform-origin: 100% 50%;
+		}
+	}
+	&::view-transition-new(main) {
+		animation-name: slide-in-from-right;
+        background: var(--color-primary-100);
+	}
+}
+
+html[data-transition="backwards"] {
+
+    &::view-transition-old(main) {
+		animation-name: slide-out-to-right;
+		z-index: 1;
+        background: var(--color-primary-100);
+	}
+	&::view-transition-new(main) {
+		animation-name: fade-in;
+		transform-origin: 100% 50%;
+
+	}
+}
+
+@keyframes steady {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-in-from-left {
+    from {
+        translate: -100vw 0;
+    }
+}
+@keyframes slide-in-from-right {
+    from {
+        translate: 100vw 0;
+    }
+}
+@keyframes slide-out-to-left {
+    to {
+        translate: -100vw 0;
+    }
+}
+@keyframes slide-out-to-right {
+    to {
+        translate: 100vw 0;
+    }
+}
+
+@keyframes shrink {
+	to {
+		scale: 0.8;
+		opacity: 0.5;
+	}
+}
+@keyframes grow {
+	from {
+		scale: 0.8;
+		opacity: 0.5;
+	}
+}
+@keyframes slide-in {
+	from {
+		translate: 100vw 0;
+	}
+}
+@keyframes slide-out {
+	to {
+		translate: 100vw 0;
+	}
+}
+@keyframes scale-up {
+	from {
+		scale: 0;
+	}
+}
+@keyframes scale-down {
+	to {
+		scale: 0;
+	}
+}
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+}
+@keyframes fade-out {
+	to {
+		opacity: 0;
+	}
+}

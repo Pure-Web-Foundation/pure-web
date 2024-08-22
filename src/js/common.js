@@ -89,33 +89,28 @@ const inputTemplate = /*html*/ `
 </label>`;
 
 /**
- * Enhance inputs from simple syntax to the syntax described in the input story.
+ * Enhance inputs having data-label attribute.
  *
  * @param {HTMLElement|Document|null} root On which root element we should apply it.
  */
-export function enhanceInputs(root = null) {
-  if (!root) root = window.document;
+export function enhanceInputWithLabel(input) {
+  const labelText = input.getAttribute("data-label") ?? "";
+  if (labelText.length) {
+    const label = parseHTML(inputTemplate)[0];
+    const type = input.getAttribute("type") || "text";
+    input.insertAdjacentElement("beforebegin", label);
+    label.querySelector(".placeholder").replaceWith(input);
+    label.querySelector("span[data-label]").textContent = labelText;
+    input.removeAttribute("data-label");
+    input.setAttribute("type", type);
+  }
 
-  // Loop over inputs and enhance them.
-  for (const input of root.querySelectorAll("[data-label]")) {
-    const labelText = input.getAttribute("data-label") || "";
-    if (labelText.length) {
-      const label = parseHTML(inputTemplate)[0];
-      const type = input.getAttribute("type") || "text";
-      input.insertAdjacentElement("beforebegin", label);
-      label.querySelector(".placeholder").replaceWith(input);
-      label.querySelector("span[data-label]").textContent = labelText;
-      input.removeAttribute("data-label");
-      input.setAttribute("type", type);
-    }
-
-    const icon = input.getAttribute("data-icon") || "";
-    if (icon) {
-      const iconColor = input.getAttribute("data-icon-color") || "";
-      const iconSize = input.getAttribute("data-icon-size") || "";
-      const iconHtml = /*html*/ `<svg-icon icon="${icon}" color="${iconColor}" size="${iconSize}"></svg-icon>`;
-      input.insertAdjacentElement("afterend", parseHTML(iconHtml)[0]);
-    }
+  const icon = input.getAttribute("data-icon") || "";
+  if (icon) {
+    const iconColor = input.getAttribute("data-icon-color") || "";
+    const iconSize = input.getAttribute("data-icon-size") || "";
+    const iconHtml = /*html*/ `<svg-icon icon="${icon}" color="${iconColor}" size="${iconSize}"></svg-icon>`;
+    input.insertAdjacentElement("afterend", parseHTML(iconHtml)[0]);
   }
 }
 
@@ -171,3 +166,113 @@ export function friendlyElement(element) {
   return `${element.nodeName.toLowerCase()}${id}${cls}`;
 }
 
+/**
+ * Enhances a regular grid to become a masonry grid
+ * @param {HTMLElement} element
+ */
+export function enhanceMasonryGrid(element) {
+  element.style.setProperty("grid-auto-rows", "20px");
+
+  createStyleSheet(/*css*/ `
+    .masonry {
+      opacity: 0;
+    }
+
+    .masonry-applied {
+      opacity: 1;
+      transition: opacity .2s ease
+    }
+    `);
+
+  const resizeGridItem = (item) => {
+    const rowHeight = parseInt(
+      window.getComputedStyle(element).getPropertyValue("grid-auto-rows")
+    );
+    const rowGap = parseInt(
+      window.getComputedStyle(element).getPropertyValue("grid-row-gap")
+    );
+    const rowSpan = Math.ceil(
+      (item.querySelector(".content").getBoundingClientRect().height + rowGap) /
+        (rowHeight + rowGap)
+    );
+    item.style.gridRowEnd = "span " + rowSpan;
+  };
+
+  const resizeAllGridItems = () => {
+    try {
+      element.classList.remove("masonry-applied");
+      for (const item of element.children) resizeGridItem(item);
+    } finally {
+      element.classList.add("masonry-applied");
+    }
+  };
+
+  window.addEventListener("resize", throttle(resizeAllGridItems, 100));
+  waitForImages(element).then(resizeAllGridItems);
+
+  return "masonry"
+}
+
+function waitForImages(container) {
+  const imgElements = container.querySelectorAll("img");
+
+  // Map over the image elements to create an array of promises
+  const imgPromises = Array.from(imgElements).map((img) => {
+    return new Promise((resolve, reject) => {
+      // Create a new Image object for each source
+      const imgSrc = img.src;
+      const image = new Image();
+
+      // Resolve the promise when the image loads successfully
+      image.onload = () => resolve(imgSrc);
+      // Reject the promise if there's an error loading the image
+      image.onerror = (error) => reject(error);
+
+      // Set the source of the Image object
+      image.src = imgSrc;
+    });
+  });
+
+  // Return a promise that resolves when all images have loaded
+  return Promise.all(imgPromises);
+}
+
+export function createStyleSheet(cssText) {
+  try {
+    let css = new CSSStyleSheet();
+    css.replaceSync(cssText);
+    document.querySelector("head").appendChild(css);
+    //return css;
+  } catch {
+    let id = generateHash(cssText);
+    let style = document.getElementById(id);
+    if (!style) {
+      style = document.createElement("style");
+      style.id = id;
+      style.textContent = cssText;
+      document.querySelector("head").appendChild(style);
+    } else {
+      console.log(id, "already added ...");
+    }
+    return {
+      cssText: cssText,
+    };
+  }
+}
+
+export function generateHash(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed,
+    h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 =
+    Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^
+    Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 =
+    Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^
+    Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}

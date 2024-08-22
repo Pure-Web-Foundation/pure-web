@@ -1,6 +1,11 @@
 import { config } from "./app.config";
 import { AutoComplete } from "./autocomplete";
-import { enhanceInputs, enhanceNavDropdownButton, parseHTML } from "./common";
+import {
+  enhanceInputWithLabel,
+  enhanceMasonryGrid,
+  enhanceNavDropdownButton,
+  parseHTML,
+} from "./common";
 import { PureSPA } from "./spa";
 import { html } from "lit";
 import { ref, createRef } from "lit/directives/ref.js";
@@ -23,8 +28,9 @@ customElements.define(
     constructor() {
       super();
 
-      this.enhancers.add("[data-label]", enhanceInputs);
-      this.enhancers.add("button[data-dropdown]", enhanceNavDropdownButton);
+      this.enhancers.add("[data-label]", enhanceInputWithLabel);
+      this.enhancers.add("nav[data-dropdown]", enhanceNavDropdownButton);
+      this.enhancers.add(".masonry", enhanceMasonryGrid);
     }
 
     async beforeRouting() {
