@@ -12,6 +12,11 @@ export function getUniqueName(prefix?: string, radix?: number): string;
  */
 export function parseHTML(html: string): NodeListOf<ChildNode>;
 /**
+ * Debounces events that occur repeatedly, such as resize and mousemove events.
+ * @param {Function} fn
+ */
+export function debounce(fn: Function): (...params: any[]) => void;
+/**
  * Throttles execution of any function
  * @param {Function} fn - Function to fire
  * @param {Number} timeoutMs - time in milliseconds to buffer all calls to fn.
