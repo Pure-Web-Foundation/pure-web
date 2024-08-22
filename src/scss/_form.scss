@@ -78,3 +78,25 @@ label:has(select) {
     }
   }
 }
+
+button, .button{
+  cursor: pointer;
+  background: var(--button-background);
+  border: 1px solid var(--color-border);
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  text-align: center;
+  color: var(--button-color);
+  display: inline-flex;
+  padding: 15px 40px;
+  font-weight: 600;
+  text-decoration: none;
+  outline: none;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}

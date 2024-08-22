@@ -1,5 +1,9 @@
 @media only screen and (min-width: 601px) {
-  my-app {
+  :root{
+    --header-height: 100px;
+  }
+
+  pure-web {
     grid-template-rows: var(--header-height) 1fr var(--footer-height);
     grid-template-columns: 200px 1fr;
 
@@ -8,20 +12,28 @@
       "menu main"
       "foot foot";
 
-      aside {
-        menu{
-          flex-direction: column;
+    aside {
 
-          li{
-            margin-bottom: 1rem;
-            padding: 0;
+      menu {
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
 
-            a{
-              display: inline-block;
-            }
+        li {
+          margin: 0;
+          margin-bottom: 1rem;
+          padding: 0;
+
+          a {
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 8rem;
           }
         }
       }
+    }
 
 
   }

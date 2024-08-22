@@ -761,4 +761,27 @@ export class PureSPA extends LitElement {
     }
     return properties;
   }
+
+  /**
+   * Gets the breadcrumps of the given route
+   * @param {Object} route
+   * @returns {Array} array with the breadcrumbs.
+   */
+  getBreadCrumbs(route) {
+    const path = route.path;
+
+    const ar = [];
+
+    const recurse = (p) => {
+      const route = this.config.routes[p];
+      ar.push({
+        name: route.name,
+        url: route.route,
+      });
+      if (route.parentRoute) recurse(route.parentRoute);
+    };
+
+    recurse(path);
+    return ar.reverse();
+  }
 }

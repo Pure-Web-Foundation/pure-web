@@ -1,18 +1,29 @@
 import { PageAbout } from "./pages/page-about";
 import { PageHome } from "./pages/page-home";
-import { PageTerms } from "./pages/page-terms";
-
+import { PageMasonry } from "./pages/examples/page-masonry";
+import { PageExamples } from "./pages/examples/";
+import { PageEnhancements } from "./pages/examples/page-enhancements";
+import { name } from "../../package.json";
 export const config = {
   routes: {
     "/": {
-      name: "Home",
+      name: name,
       run: PageHome
     },
     "/about": {
       run: PageAbout
     },
-    "/terms": {
-      run: PageTerms
+    "/examples": {
+      run: PageExamples,
+      routes: {
+        "/masonry":{
+          run: PageMasonry
+        },
+        "/enhancements":{
+          run: PageEnhancements,
+          name: "Other enhancements"
+        }
+      }
     }
   }
 };

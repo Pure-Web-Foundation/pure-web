@@ -1,0 +1,322 @@
+/* Dropdown Button */
+
+button {
+  &[data-dropdown] {
+    padding: .15rem;
+    position: relative;
+  }
+}
+
+nav[data-dropdown] {
+  display: inline-block;
+  position: relative;
+  --icon-size: 24px;
+  --icon-fill-color: black;
+  //--button-color: red;// var(--button-color, red);
+  --button-color-hover: black;
+  --button-background-hover: white;
+  --border-color: #ccc;
+
+  >button {
+    padding: 0.7rem 2rem .7rem 1.2rem;
+
+    &.icon:has(span[hidden]){
+      padding: 0.7rem 1rem .7rem 1rem;
+    }
+
+  }
+
+  &.img-button {
+    border-radius: 100%;
+    background-color: transparent;
+
+    >button {
+      padding: 0;
+
+      background-color: transparent;
+
+      >img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        border-radius: 100%;
+      }
+    }
+  }
+
+  menu {
+    min-width: 200px;
+    border-radius: var(--border-radius-normal, .5rem);
+    opacity: 1;
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height .3s ease-in-out;
+
+    &[hidden] {
+      max-height: 0;
+      display: block !important;
+      visibility: visible;
+      opacity: 0;
+      transition: max-height .3s ease-in-out;
+    }
+
+    li {
+      --icon-fill-color: black;
+
+      >a {
+        gap: .5rem;
+      }
+
+      hr{
+        border-color: var(--border-color);
+      }
+    }
+  }
+}
+
+[data-dropdown] {
+  z-index: 1;
+  --icon-fill-color: var(--button-icon-color, white) !important;
+
+
+  span[hidden] {
+    display: inline !important;
+    visibility: hidden;
+    overflow-x: hidden;
+    width: 0px;
+  }
+
+  &:hover {
+    box-shadow: var(--button-box-shadow, var(--default-box-shadow));
+  }
+
+  details {
+    display: flex;
+    margin-bottom: unset;
+    line-height: unset;
+    padding: unset;
+    border: unset;
+    transition: unset;
+
+    summary {
+      padding: .7rem 1.5rem;
+      display: flex;
+      flex-direction: row;
+      gap: .5rem;
+      align-items: center;
+      line-height: 1rem;
+      justify-content: center;
+      margin-left: 0px;
+      margin-top: 0px;
+
+      &::before {
+        content: unset;
+      }
+
+      img {
+        width: 24px;
+        background-color: transparent;
+      }
+
+      &::marker {
+        color: transparent;
+      }
+
+      &:has(span[hidden]):not(:has(>img)) {
+        padding: 0.7rem 1rem;
+      }
+    }
+
+
+
+    &:not([open]) {
+      ul {
+        opacity: 0;
+        transition: opacity var(--transition-duration, .2s) ease-out;
+        transition-delay: .3s;
+      }
+    }
+
+    &[open] {
+
+      ul {
+        opacity: 1;
+        transition: opacity var(--transition-duration, .2s) ease-out;
+        transition-delay: .3s;
+        transition: opacity var(--transition-duration, .2s) ease-out;
+      }
+    }
+  }
+
+  ul {
+    position: absolute;
+  }
+
+  ul,
+  menu {
+    z-index: 2;
+    box-shadow: 0px 1px 4px rgb(0, 0, 0);
+    background-color: var(--button-background, #ccc);
+    transition: all var(--transition-duration, .2s) ease-out;
+    padding: 0;
+
+    top: unset;
+    list-style: none;
+    margin: 0;
+    //zoom: 0;
+    transition: opacity var(--transition-duration, .2s) ease-out;
+
+    li {
+      margin: 0;
+      text-align: left;
+
+      hr {
+        margin: 0;
+        border: 1px solid rgba(0, 0, 0, .1);
+      }
+
+      a {
+        text-decoration: none;
+        display: flex;
+        color: var(--button-color);
+        padding: .6rem 1.2rem;
+
+        &:hover {
+          background-color: var(--button-background-hover, #ddd);
+          color: var(--button-color-hover, #fff);
+        }
+      }
+    }
+  }
+
+  &[data-prepend-icon] {
+    --icon-size: 24px;
+    padding-left: 1.15rem;
+    position: relative;
+
+    details {
+      overflow: hidden;
+
+      svg-icon {
+        position: absolute;
+        left: 1rem;
+      }
+    }
+
+    &.text-empty {
+      padding-right: 0;
+
+      details {
+        summary {
+          padding: 0.7rem 1.5rem;
+        }
+      }
+    }
+
+  }
+
+  &[data-dropdown-image] {
+    border: 0;
+    background-color: transparent;
+
+    details {
+      background-color: transparent;
+
+      summary {
+        margin-top: 0px;
+        margin-right: -10px;
+        margin-left: -25px;
+        padding: 0;
+
+      }
+
+      img {
+        border-radius: 100%;
+        object-fit: contain;
+        margin: 0;
+        width: 32px;
+        height: 32px;
+      }
+    }
+  }
+
+  ul,
+  menu {
+    li:last-child>* {
+      border-radius: 0 0 var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem);
+    }
+  }
+
+  &.align-right {
+    &:has(details[open]) {
+      border-radius: var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) 0 var(--border-radius-normal, .5rem);
+    }
+
+    &:has(menu:not([hidden])) {
+      >button {
+        border-radius: var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) 0 var(--border-radius-normal, .5rem);
+      }
+
+      menu {
+        right: 0;
+        border-radius: var(--border-radius-normal, .5rem) 0 var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem);
+      }
+    }
+
+    details {
+
+      ul,
+      menu,
+      li:first-child>* {
+        right: 0;
+        border-radius: var(--border-radius-normal, .5rem) 0 var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem);
+      }
+    }
+
+    &[data-dropdown-image] {
+
+      ul,
+      menu {
+        //right: -10px;
+        margin-top: 5px;
+      }
+    }
+  }
+
+  &.align-left {
+    &:has(details[open]) {
+      border-radius: var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) 0;
+    }
+
+    &:has(menu:not([hidden])) {
+      >button {
+        border-radius: var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) 0;
+      }
+
+      menu {
+        border-radius: 0 var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem);
+
+      }
+
+    }
+
+
+    ul,
+    menu {
+      li:first-child>* {
+        left: 0;
+        border-radius: 0 var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem) var(--border-radius-normal, .5rem);
+      }
+    }
+
+
+
+  }
+}
+
+nav[data-dropdown] {
+  menu {
+    position: absolute;
+    background-color: var(--button-background);
+  }
+}

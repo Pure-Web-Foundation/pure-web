@@ -1,24 +1,17 @@
 import { html } from "lit";
 import { PureSPA } from "../spa";
+import { name, version, description, repository } from "../../../package.json";
 
-export class PageAbout extends PureSPA.WidgetEnabledPage {
-  renderPage() {
+export class PageAbout extends PureSPA.Page {
+  render() {
     return html`
-
-    <div>
-    <input
-      name="test"
-      placeholder="Test input..."
-      type="text"
-      data-label="Test"
-      maxlength="20"
-    />
-    </div>
-
+      <h3>${name} ${version}</h3>
+      <p>${description}</p>
+      <nav class="icons x-large">
+        <a href="${repository.url}" target="_blank" title="GitHub"><svg-icon icon="github"></svg-icon></a>
+        <a href="https://www.npmjs.com/package/${name}" target="_blank" title="NPM"><svg-icon icon="npm"></svg-icon></a>
+     </nav>
     `;
   }
-
-  renderWidget() {
-    return html`About (widget)`;
-  }
 }
+

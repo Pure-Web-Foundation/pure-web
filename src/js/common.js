@@ -307,3 +307,20 @@ export function generateHash(str, seed = 0) {
   const radix = 16;
   return `h${hashNr.toString(radix)}`;
 }
+
+/**
+ * Enhance buttons with [data-prepend-icon] and [data-append-icon]
+ * @param {HTMLButtonElement} button
+ */
+export function enhanceButtonWithIcon(button) {
+  ["prepend", "append"].forEach((position) => {
+    const icon = button.getAttribute(`data-${position}-icon`) ?? "";
+    if (icon) {
+      button.removeAttribute(`data-${position}-icon`);
+      button.classList.add("icon", position === "prepend" ? "left" : "right");
+      const svgIcon = parseHTML(`<svg-icon icon="${icon}"></svg-icon>`)[0];
+      button.insertBefore(svgIcon, button.childNodes[0]);
+    }
+    return "icon-button";
+  });
+}

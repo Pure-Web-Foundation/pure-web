@@ -1,34 +1,56 @@
+@charset "UTF-8";
 @media only screen and (max-width: 600px) {
-  my-app {
-    padding-bottom: 1rem;
+  :root {
+    --header-height: 70px;
+  }
+  pure-web {
     height: 100%;
     display: grid;
     grid-template-rows: 60px 1fr 50px;
     grid-template-columns: 1fr;
     grid-template-areas: "head" "main" "menu";
   }
-  my-app footer {
+  pure-web header {
+    padding: 10px;
+  }
+  pure-web main {
+    padding: 10px;
+  }
+  pure-web footer {
     display: none;
   }
-  my-app aside menu {
+  pure-web aside {
+    padding: 10px;
+  }
+  pure-web aside menu {
     flex-direction: row;
   }
 }
 @media only screen and (min-width: 601px) {
-  my-app {
+  :root {
+    --header-height: 100px;
+  }
+  pure-web {
     grid-template-rows: var(--header-height) 1fr var(--footer-height);
     grid-template-columns: 200px 1fr;
     grid-template-areas: "head head" "menu main" "foot foot";
   }
-  my-app aside menu {
+  pure-web aside menu {
     flex-direction: column;
+    margin: 0;
+    padding: 0;
   }
-  my-app aside menu li {
+  pure-web aside menu li {
+    margin: 0;
     margin-bottom: 1rem;
     padding: 0;
   }
-  my-app aside menu li a {
+  pure-web aside menu li a {
     display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 8rem;
   }
 }
 :root {
@@ -450,6 +472,29 @@ label:has(select):has(select:focus) select::placeholder {
   opacity: 1;
 }
 
+button, .button {
+  cursor: pointer;
+  background: var(--button-background);
+  border: 1px solid var(--color-border);
+  -moz-appearance: none;
+       appearance: none;
+  -webkit-appearance: none;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  text-align: center;
+  color: var(--button-color);
+  display: inline-flex;
+  padding: 15px 40px;
+  font-weight: 600;
+  text-decoration: none;
+  outline: none;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
 html[data-transition=forwards] :root,
 html[data-transition=backwards] :root {
   view-transition-name: none;
@@ -555,9 +600,246 @@ html[data-transition=backwards]::view-transition-new(main) {
     opacity: 0;
   }
 }
+/* Dropdown Button */
+button[data-dropdown] {
+  padding: 0.15rem;
+  position: relative;
+}
+
+nav[data-dropdown] {
+  display: inline-block;
+  position: relative;
+  --icon-size: 24px;
+  --icon-fill-color: black;
+  --button-color-hover: black;
+  --button-background-hover: white;
+  --border-color: #ccc;
+}
+nav[data-dropdown] > button {
+  padding: 0.7rem 2rem 0.7rem 1.2rem;
+}
+nav[data-dropdown] > button.icon:has(span[hidden]) {
+  padding: 0.7rem 1rem 0.7rem 1rem;
+}
+nav[data-dropdown].img-button {
+  border-radius: 100%;
+  background-color: transparent;
+}
+nav[data-dropdown].img-button > button {
+  padding: 0;
+  background-color: transparent;
+}
+nav[data-dropdown].img-button > button > img {
+  width: 32px;
+  height: 32px;
+  -o-object-fit: contain;
+     object-fit: contain;
+  border-radius: 100%;
+}
+nav[data-dropdown] menu {
+  min-width: 200px;
+  border-radius: var(--border-radius-normal, 0.5rem);
+  opacity: 1;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+nav[data-dropdown] menu[hidden] {
+  max-height: 0;
+  display: block !important;
+  visibility: visible;
+  opacity: 0;
+  transition: max-height 0.3s ease-in-out;
+}
+nav[data-dropdown] menu li {
+  --icon-fill-color: black;
+}
+nav[data-dropdown] menu li > a {
+  gap: 0.5rem;
+}
+nav[data-dropdown] menu li hr {
+  border-color: var(--border-color);
+}
+
+[data-dropdown] {
+  z-index: 1;
+  --icon-fill-color: var(--button-icon-color, white) !important;
+}
+[data-dropdown] span[hidden] {
+  display: inline !important;
+  visibility: hidden;
+  overflow-x: hidden;
+  width: 0px;
+}
+[data-dropdown]:hover {
+  box-shadow: var(--button-box-shadow, var(--default-box-shadow));
+}
+[data-dropdown] details {
+  display: flex;
+  margin-bottom: unset;
+  line-height: unset;
+  padding: unset;
+  border: unset;
+  transition: unset;
+}
+[data-dropdown] details summary {
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  line-height: 1rem;
+  justify-content: center;
+  margin-left: 0px;
+  margin-top: 0px;
+}
+[data-dropdown] details summary::before {
+  content: unset;
+}
+[data-dropdown] details summary img {
+  width: 24px;
+  background-color: transparent;
+}
+[data-dropdown] details summary::marker {
+  color: transparent;
+}
+[data-dropdown] details summary:has(span[hidden]):not(:has(> img)) {
+  padding: 0.7rem 1rem;
+}
+[data-dropdown] details:not([open]) ul {
+  opacity: 0;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+  transition-delay: 0.3s;
+}
+[data-dropdown] details[open] ul {
+  opacity: 1;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+  transition-delay: 0.3s;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+}
+[data-dropdown] ul {
+  position: absolute;
+}
+[data-dropdown] ul,
+[data-dropdown] menu {
+  z-index: 2;
+  box-shadow: 0px 1px 4px rgb(0, 0, 0);
+  background-color: var(--button-background, #ccc);
+  transition: all var(--transition-duration, 0.2s) ease-out;
+  padding: 0;
+  top: unset;
+  list-style: none;
+  margin: 0;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+}
+[data-dropdown] ul li,
+[data-dropdown] menu li {
+  margin: 0;
+  text-align: left;
+}
+[data-dropdown] ul li hr,
+[data-dropdown] menu li hr {
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+[data-dropdown] ul li a,
+[data-dropdown] menu li a {
+  text-decoration: none;
+  display: flex;
+  color: var(--button-color);
+  padding: 0.6rem 1.2rem;
+}
+[data-dropdown] ul li a:hover,
+[data-dropdown] menu li a:hover {
+  background-color: var(--button-background-hover, #ddd);
+  color: var(--button-color-hover, #fff);
+}
+[data-dropdown][data-prepend-icon] {
+  --icon-size: 24px;
+  padding-left: 1.15rem;
+  position: relative;
+}
+[data-dropdown][data-prepend-icon] details {
+  overflow: hidden;
+}
+[data-dropdown][data-prepend-icon] details svg-icon {
+  position: absolute;
+  left: 1rem;
+}
+[data-dropdown][data-prepend-icon].text-empty {
+  padding-right: 0;
+}
+[data-dropdown][data-prepend-icon].text-empty details summary {
+  padding: 0.7rem 1.5rem;
+}
+[data-dropdown][data-dropdown-image] {
+  border: 0;
+  background-color: transparent;
+}
+[data-dropdown][data-dropdown-image] details {
+  background-color: transparent;
+}
+[data-dropdown][data-dropdown-image] details summary {
+  margin-top: 0px;
+  margin-right: -10px;
+  margin-left: -25px;
+  padding: 0;
+}
+[data-dropdown][data-dropdown-image] details img {
+  border-radius: 100%;
+  -o-object-fit: contain;
+     object-fit: contain;
+  margin: 0;
+  width: 32px;
+  height: 32px;
+}
+[data-dropdown] ul li:last-child > *,
+[data-dropdown] menu li:last-child > * {
+  border-radius: 0 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right:has(details[open]) {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right:has(menu:not([hidden])) > button {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right:has(menu:not([hidden])) menu {
+  right: 0;
+  border-radius: var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right details ul,
+[data-dropdown].align-right details menu,
+[data-dropdown].align-right details li:first-child > * {
+  right: 0;
+  border-radius: var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right[data-dropdown-image] ul,
+[data-dropdown].align-right[data-dropdown-image] menu {
+  margin-top: 5px;
+}
+[data-dropdown].align-left:has(details[open]) {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0;
+}
+[data-dropdown].align-left:has(menu:not([hidden])) > button {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0;
+}
+[data-dropdown].align-left:has(menu:not([hidden])) menu {
+  border-radius: 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-left ul li:first-child > *,
+[data-dropdown].align-left menu li:first-child > * {
+  left: 0;
+  border-radius: 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+
+nav[data-dropdown] menu {
+  position: absolute;
+  background-color: var(--button-background);
+}
+
 :root {
-  --accent-color: #219f38;
-  --header-height: 100px;
+  --accent-color: #dd4477;
+  --heading-color: var(--accent-color);
   --footer-height: 50px;
   --icon-fill-color: black;
   --padding-default: .5rem;
@@ -565,9 +847,9 @@ html[data-transition=backwards]::view-transition-new(main) {
   --slot-padding: var(--padding-default, 10px);
   --box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
   --border-radius-normal: 1rem;
-  --button-color: #fff;
-  --button-background: var(--accent-color);
-  --button-background-hover: #ca2c6b;
+  --button-color: white;
+  --button-background: #666;
+  --button-background-hover: var(--accent-color);
   --button-icon-color: #fff;
   -webkit-font-smoothing: antialiased;
 }
@@ -584,10 +866,9 @@ html {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   overflow-y: scroll;
   overflow-x: hidden;
-  background: hsl(0, 0%, 90%);
-  background-color: hsl(0, 0%, 90%);
-  background-image: radial-gradient(circle at 86% 50%, hsl(280, 0%, 89%) 6.6887545664%, transparent 44.9843825416%);
-  background-blend-mode: normal;
+  background-color: hsl(60.8823529412, 0%, 96%);
+  background-image: radial-gradient(circle at 64% 12%, hsl(63.5294117647, 52%, 85%) 6.6887545664%, transparent 44.9843825416%), radial-gradient(circle at 86% 50%, hsl(285.8823529412, 52%, 85%) 6.6887545664%, transparent 44.9843825416%);
+  background-blend-mode: darken, normal;
 }
 
 body {
@@ -595,26 +876,61 @@ body {
   margin: auto;
 }
 
-my-app {
+pure-web {
   height: 100%;
   display: grid;
 }
-my-app header {
+pure-web header {
   z-index: 10;
   grid-area: head;
-  padding: 1rem;
+  padding: 2rem;
 }
-my-app aside {
+pure-web aside {
   grid-area: menu;
-  padding: 1rem;
 }
-my-app footer {
+pure-web footer {
   grid-area: foot;
 }
-my-app main {
+pure-web main {
   grid-area: main;
   max-width: 800px;
+  padding: 0rem 2rem;
+}
+
+ul {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+ul li:not(:has(hr)) {
+  list-style-type: none;
+  margin-bottom: 1rem;
+}
+ul li:not(:has(hr)) ::before {
+  content: "⭕";
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
+a:link,
+a:visited {
+  text-decoration: none;
+  color: inherit;
+}
+a:link:hover,
+a:visited:hover {
+  text-decoration: underline;
+}
+
+code {
   padding: 1rem;
+  background-color: #333;
+  color: white;
+  border-radius: var(--radius, 0.5rem);
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-family: consolas, "Courier New", Courier, monospace;
+  font-size: 14px;
 }
 
 h1,
@@ -629,7 +945,8 @@ header {
   height: var(--header-height);
 }
 header h1 {
-  color: #dd4477;
+  color: var(--heading-color);
+  margin: 0;
 }
 header h2 {
   font-size: 0.9rem;
@@ -673,17 +990,9 @@ aside menu a {
   color: inherit;
   text-transform: uppercase;
 }
-
-#omnibox {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-}
-#omnibox span[data-label] {
-  display: none;
-}
-#omnibox span[data-label] > input {
-  width: 60px;
+aside menu a.active {
+  filter: invert(100%);
+  transition: all 0.2s ease;
 }
 
 .tiles {
@@ -731,6 +1040,12 @@ aside menu a {
 main {
   view-transition-name: main;
 }
+main h2,
+main h3,
+main h4 {
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
 
 footer {
   view-transition-name: footer-content;
@@ -738,4 +1053,16 @@ footer {
 
 header {
   view-transition-name: top-bar;
+}
+
+.icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  justify-items: center;
+}
+.icons.x-large {
+  --icon-size: 256px ;
 }/*# sourceMappingURL=main.css.map */

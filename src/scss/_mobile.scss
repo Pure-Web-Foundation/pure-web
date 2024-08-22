@@ -1,6 +1,9 @@
 @media only screen and (max-width: 600px) {
-  my-app {
-    padding-bottom: 1rem;
+  :root{
+    --header-height: 70px;
+  }
+
+  pure-web {
     height: 100%;
     display: grid;
     grid-template-rows: 60px 1fr 50px;
@@ -11,11 +14,21 @@
       "main"
       "menu";
 
+    header{
+      padding: 10px
+    }
+    main{
+      padding: 10px
+    }
+
+
+
     footer {
       display: none;
     }
 
     aside {
+      padding: 10px;
       menu{
         flex-direction: row;
       }

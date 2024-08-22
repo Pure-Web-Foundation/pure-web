@@ -10,9 +10,16 @@ export class PageHome extends PureSPA.Page {
       <p>This is an <em>NPM</em> package with these exports:</p>
       <ul>
         ${repeat(Object.keys(moduleExports), (item) => {
-          const className = item.substring(2);
-          return html`<li><a target="_blank"
-            href="https://github.com/mvneerven/pure-web/blob/main/readme.md#${className}-class">${name}/${className}</a></li>`;
+          const id = item.substring(2);
+          const hash = `#${name}${id}`;
+
+          return html`<li>
+            <a
+              target="_blank"
+              href="https://github.com/mvneerven/pure-web/blob/main/readme.md${hash}"
+              >${name}/${id}</a
+            >
+          </li>`;
         })}
       </ul>
     `;

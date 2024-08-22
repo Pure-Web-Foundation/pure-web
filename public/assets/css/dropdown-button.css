@@ -1,0 +1,236 @@
+/* Dropdown Button */
+button[data-dropdown] {
+  padding: 0.15rem;
+  position: relative;
+}
+
+nav[data-dropdown] {
+  display: inline-block;
+  position: relative;
+  --icon-size: 24px;
+  --icon-fill-color: black;
+  --button-color-hover: black;
+  --button-background-hover: white;
+  --border-color: #ccc;
+}
+nav[data-dropdown] > button {
+  padding: 0.7rem 2rem 0.7rem 1.2rem;
+}
+nav[data-dropdown] > button.icon:has(span[hidden]) {
+  padding: 0.7rem 1rem 0.7rem 1rem;
+}
+nav[data-dropdown].img-button {
+  border-radius: 100%;
+  background-color: transparent;
+}
+nav[data-dropdown].img-button > button {
+  padding: 0;
+  background-color: transparent;
+}
+nav[data-dropdown].img-button > button > img {
+  width: 32px;
+  height: 32px;
+  -o-object-fit: contain;
+     object-fit: contain;
+  border-radius: 100%;
+}
+nav[data-dropdown] menu {
+  min-width: 200px;
+  border-radius: var(--border-radius-normal, 0.5rem);
+  opacity: 1;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+nav[data-dropdown] menu[hidden] {
+  max-height: 0;
+  display: block !important;
+  visibility: visible;
+  opacity: 0;
+  transition: max-height 0.3s ease-in-out;
+}
+nav[data-dropdown] menu li {
+  --icon-fill-color: black;
+}
+nav[data-dropdown] menu li > a {
+  gap: 0.5rem;
+}
+nav[data-dropdown] menu li hr {
+  border-color: var(--border-color);
+}
+
+[data-dropdown] {
+  z-index: 1;
+  --icon-fill-color: var(--button-icon-color, white) !important;
+}
+[data-dropdown] span[hidden] {
+  display: inline !important;
+  visibility: hidden;
+  overflow-x: hidden;
+  width: 0px;
+}
+[data-dropdown]:hover {
+  box-shadow: var(--button-box-shadow, var(--default-box-shadow));
+}
+[data-dropdown] details {
+  display: flex;
+  margin-bottom: unset;
+  line-height: unset;
+  padding: unset;
+  border: unset;
+  transition: unset;
+}
+[data-dropdown] details summary {
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  line-height: 1rem;
+  justify-content: center;
+  margin-left: 0px;
+  margin-top: 0px;
+}
+[data-dropdown] details summary::before {
+  content: unset;
+}
+[data-dropdown] details summary img {
+  width: 24px;
+  background-color: transparent;
+}
+[data-dropdown] details summary::marker {
+  color: transparent;
+}
+[data-dropdown] details summary:has(span[hidden]):not(:has(> img)) {
+  padding: 0.7rem 1rem;
+}
+[data-dropdown] details:not([open]) ul {
+  opacity: 0;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+  transition-delay: 0.3s;
+}
+[data-dropdown] details[open] ul {
+  opacity: 1;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+  transition-delay: 0.3s;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+}
+[data-dropdown] ul {
+  position: absolute;
+}
+[data-dropdown] ul,
+[data-dropdown] menu {
+  z-index: 2;
+  box-shadow: 0px 1px 4px rgb(0, 0, 0);
+  background-color: var(--button-background, #ccc);
+  transition: all var(--transition-duration, 0.2s) ease-out;
+  padding: 0;
+  top: unset;
+  list-style: none;
+  margin: 0;
+  transition: opacity var(--transition-duration, 0.2s) ease-out;
+}
+[data-dropdown] ul li,
+[data-dropdown] menu li {
+  margin: 0;
+  text-align: left;
+}
+[data-dropdown] ul li hr,
+[data-dropdown] menu li hr {
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+[data-dropdown] ul li a,
+[data-dropdown] menu li a {
+  text-decoration: none;
+  display: flex;
+  color: var(--button-color);
+  padding: 0.6rem 1.2rem;
+}
+[data-dropdown] ul li a:hover,
+[data-dropdown] menu li a:hover {
+  background-color: var(--button-background-hover, #ddd);
+  color: var(--button-color-hover, #fff);
+}
+[data-dropdown][data-prepend-icon] {
+  --icon-size: 24px;
+  padding-left: 1.15rem;
+  position: relative;
+}
+[data-dropdown][data-prepend-icon] details {
+  overflow: hidden;
+}
+[data-dropdown][data-prepend-icon] details svg-icon {
+  position: absolute;
+  left: 1rem;
+}
+[data-dropdown][data-prepend-icon].text-empty {
+  padding-right: 0;
+}
+[data-dropdown][data-prepend-icon].text-empty details summary {
+  padding: 0.7rem 1.5rem;
+}
+[data-dropdown][data-dropdown-image] {
+  border: 0;
+  background-color: transparent;
+}
+[data-dropdown][data-dropdown-image] details {
+  background-color: transparent;
+}
+[data-dropdown][data-dropdown-image] details summary {
+  margin-top: 0px;
+  margin-right: -10px;
+  margin-left: -25px;
+  padding: 0;
+}
+[data-dropdown][data-dropdown-image] details img {
+  border-radius: 100%;
+  -o-object-fit: contain;
+     object-fit: contain;
+  margin: 0;
+  width: 32px;
+  height: 32px;
+}
+[data-dropdown] ul li:last-child > *,
+[data-dropdown] menu li:last-child > * {
+  border-radius: 0 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right:has(details[open]) {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right:has(menu:not([hidden])) > button {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right:has(menu:not([hidden])) menu {
+  right: 0;
+  border-radius: var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right details ul,
+[data-dropdown].align-right details menu,
+[data-dropdown].align-right details li:first-child > * {
+  right: 0;
+  border-radius: var(--border-radius-normal, 0.5rem) 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-right[data-dropdown-image] ul,
+[data-dropdown].align-right[data-dropdown-image] menu {
+  margin-top: 5px;
+}
+[data-dropdown].align-left:has(details[open]) {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0;
+}
+[data-dropdown].align-left:has(menu:not([hidden])) > button {
+  border-radius: var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) 0;
+}
+[data-dropdown].align-left:has(menu:not([hidden])) menu {
+  border-radius: 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+[data-dropdown].align-left ul li:first-child > *,
+[data-dropdown].align-left menu li:first-child > * {
+  left: 0;
+  border-radius: 0 var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem) var(--border-radius-normal, 0.5rem);
+}
+
+nav[data-dropdown] menu {
+  position: absolute;
+  background-color: var(--button-background);
+}/*# sourceMappingURL=dropdown-button.css.map */
