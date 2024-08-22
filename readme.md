@@ -3,7 +3,7 @@
   npm i pure-web --save-dev
 ```
 
-# PureSPA class
+# pure-web/spa 
 
 ```js
 import { PureSPA } from "pure-web/spa";
@@ -162,7 +162,7 @@ In this case, the `PageProfile` class can retrieve the captured route data using
 As you can see in the example above, if you use this subroute syntax, the parent route's configured component will also be triggered for the sub route.
 
 
-# AutoComplete class
+# pure-web/ac 
 
 ```js
 import { AutoComplete } from "pure-web/ac";
@@ -200,4 +200,17 @@ import { AutoComplete } from "pure-web/ac";
       }
     }
   }
+```
+
+# pure-web/common
+
+Common utility methods for daily use.
+
+
+# pure-web/svg-icon
+
+A web component for SVG sprite display.
+
+```html
+<svg-icon icon="menu"></svg-icon>
 ```
