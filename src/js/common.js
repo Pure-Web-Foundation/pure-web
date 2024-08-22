@@ -23,7 +23,7 @@ export function parseHTML(html) {
  * Debounces events that occur repeatedly, such as resize and mousemove events.
  * @param {Function} fn
  */
-export const debounce = (fn) => {
+export function debounce(fn) {
   // This holds the requestAnimationFrame reference, so we can cancel it if we wish
   let frame;
 
@@ -40,7 +40,7 @@ export const debounce = (fn) => {
       fn(...params);
     });
   };
-};
+}
 
 /**
  * Throttles execution of any function
