@@ -7,7 +7,11 @@ export namespace config {
         "/about": {
             run: typeof PageAbout;
         };
+        "/terms": {
+            run: typeof PageTerms;
+        };
     };
 }
 import { PageHome } from "./pages/page-home";
 import { PageAbout } from "./pages/page-about";
+import { PageTerms } from "./pages/page-terms";

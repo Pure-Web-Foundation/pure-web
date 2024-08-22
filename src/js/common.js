@@ -115,6 +115,12 @@ export function enhanceInputWithLabel(input) {
 }
 
 let uniqueNavId;
+/**
+ * Enhances a <nav data-dropdown><button></button><menu></menu></nav> structure
+ * to become a dropdown button.
+ * @param {HTMLElement} nav
+ * @returns {String} return value indicating the enhancement has been applied.
+ */
 export function enhanceNavDropdownButton(nav) {
   const button = nav.querySelector("button");
   if (button.textContent.trim().length === 0) {
@@ -159,7 +165,13 @@ export function enhanceNavDropdownButton(nav) {
   return "nav";
 }
 
-export function friendlyElement(element) {
+/**
+ * Returns a string that displays the element in a CSS-type,
+ * readable way, following CSS selector syntax.
+ * @param {HTMLElement} element
+ * @returns {String} human readable string that identifies the element.
+ */
+export function getElementSelector(element) {
   const id = element.id ? "#" + element.id : "";
   let cls = [...element.classList].join(".");
   if (cls) cls = "." + cls;
@@ -173,7 +185,7 @@ export function friendlyElement(element) {
 export function enhanceMasonryGrid(element) {
   element.style.setProperty("grid-auto-rows", "20px");
 
-  createStyleSheet(/*css*/ `
+  addStyleSheet(/*css*/ `
     .masonry {
       opacity: 0;
     }
@@ -210,56 +222,50 @@ export function enhanceMasonryGrid(element) {
   window.addEventListener("resize", throttle(resizeAllGridItems, 100));
   waitForImages(element).then(resizeAllGridItems);
 
-  return "masonry"
+  return "masonry";
 }
 
-function waitForImages(container) {
+/**
+ * Returns a Promise that resolves when all images in the given container have downloaded.
+ */
+export function waitForImages(container) {
   const imgElements = container.querySelectorAll("img");
 
-  // Map over the image elements to create an array of promises
   const imgPromises = Array.from(imgElements).map((img) => {
     return new Promise((resolve, reject) => {
-      // Create a new Image object for each source
       const imgSrc = img.src;
       const image = new Image();
-
-      // Resolve the promise when the image loads successfully
       image.onload = () => resolve(imgSrc);
-      // Reject the promise if there's an error loading the image
       image.onerror = (error) => reject(error);
-
-      // Set the source of the Image object
       image.src = imgSrc;
     });
   });
-
-  // Return a promise that resolves when all images have loaded
   return Promise.all(imgPromises);
 }
 
-export function createStyleSheet(cssText) {
-  try {
-    let css = new CSSStyleSheet();
-    css.replaceSync(cssText);
-    document.querySelector("head").appendChild(css);
-    //return css;
-  } catch {
-    let id = generateHash(cssText);
-    let style = document.getElementById(id);
-    if (!style) {
-      style = document.createElement("style");
-      style.id = id;
-      style.textContent = cssText;
-      document.querySelector("head").appendChild(style);
-    } else {
-      console.log(id, "already added ...");
-    }
-    return {
-      cssText: cssText,
-    };
+/**
+ * Creates
+ * @param {String} cssText
+ * @returns {String} id of the style element
+ */
+export function addStyleSheet(cssText) {
+  const id = generateHash(cssText);
+  let styleElement = document.getElementById(id);
+  if (!styleElement) {
+    styleElement = document.createElement("style");
+    styleElement.id = id;
+    styleElement.textContent = cssText;
+    document.querySelector("head").appendChild(styleElement);
   }
+  return id;
 }
 
+/**
+ * Generates a hash that uniquely identifies a string
+ * @param {String} str
+ * @param {Number} seed
+ * @returns {String }
+ */
 export function generateHash(str, seed = 0) {
   let h1 = 0xdeadbeef ^ seed,
     h2 = 0x41c6ce57 ^ seed;
@@ -274,5 +280,7 @@ export function generateHash(str, seed = 0) {
   h2 =
     Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^
     Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  const hashNr = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  const radix = 16;
+  return `h${hashNr.toString(radix)}`;
 }

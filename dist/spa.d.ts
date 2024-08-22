@@ -1,8 +1,10 @@
 /**
- * Lit base class for SPA routing.
+ * Light-DOM Lit Container Base Class for SPA routing.
  *
  * - Uses URLPattern for routing with expressions
- * -
+ * - Uses View Transitions between routes
+ * - Uses Navigator.navigate Event for route switching
+ * - Facilitates Progressive enhancement by applying your enhancement rules at DOM changes
  */
 export class PureSPA {
     static get properties(): {
@@ -41,14 +43,21 @@ export class PureSPA {
     static mapRouterVariables(tagName: string, properties: Object, routeData: Object): Object;
     connectedCallback(): void;
     routerReady: Promise<void> | undefined;
+    /**
+     * @returns { PureSPAEnhancementRegistry } enhancers registry
+     */
     get enhancers(): PureSPAEnhancementRegistry;
     /**
      * @returns {PureSPAConfig} configuration
      */
     get config(): PureSPAConfig;
-    initializeRouting(): Promise<void>;
     /**
-     * get active route
+     * Gets the transition type for the view transition,
+     * by comparing the current and future URLs.
+     */
+    getTransitionType(): "forwards" | "backwards" | undefined;
+    /**
+     * Gets the active route
      */
     get activeRoute(): any;
     /**
@@ -80,6 +89,8 @@ export class PureSPA {
      * Subclass this to set the 404 page
      */
     get notFoundPage(): any;
+    updated(): void;
+    waitForFullRendering(): Promise<void>;
     firstUpdated(): void;
     /**
      * Sublass this to set the loading page html.

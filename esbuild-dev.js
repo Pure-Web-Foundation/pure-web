@@ -10,7 +10,8 @@ const config = {
     "src/js/index.js",
     "src/js/spa.js",
     "src/js/autocomplete.js",
-    "src/js/svg-icon.js"
+    "src/js/svg-icon.js",
+    "src/js/common.js"
   ],
   plugins: [
     rebuildNotifyPlugin(),
