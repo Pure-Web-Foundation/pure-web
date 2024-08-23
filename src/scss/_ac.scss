@@ -32,9 +32,13 @@
       color: var(--ac-color, var(--ac-color-default));
       cursor: pointer;
       transition: all 0.1s;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+
+      .text{
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+      }
 
       img {
         width: var(--icon-size);

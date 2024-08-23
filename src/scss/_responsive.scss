@@ -1,6 +1,9 @@
 @media only screen and (min-width: 601px) {
   :root{
     --header-height: 100px;
+    --padding-w: 2rem;
+    --padding-h: 0;
+
   }
 
   pure-web {
@@ -34,7 +37,6 @@
         }
       }
     }
-
 
   }
 }

@@ -30,6 +30,8 @@
   color: var(--ac-color, var(--ac-color-default));
   cursor: pointer;
   transition: all 0.1s;
+}
+.ac-container .ac-suggestion .ac-itm .text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

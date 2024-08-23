@@ -314,13 +314,21 @@ class PureSPAEnhancementRegistry {
  */
 export class PureSPA extends LitElement {
   #config;
-  #currentRoute;
+
   #routeMap = new Map();
   #enhancers = new PureSPAEnhancementRegistry();
 
   constructor() {
     super();
     window.app = this;
+  }
+
+  // Lit properties
+  static get properties() {
+    return {
+      config: { type: Object },
+      activeRoute: { type: Object }
+    };
   }
 
   connectedCallback() {
@@ -424,13 +432,6 @@ export class PureSPA extends LitElement {
   }
 
   /**
-   * Gets the active route
-   */
-  get activeRoute() {
-    return this.#currentRoute;
-  }
-
-  /**
    * Dispatch app-level event
    * @param {String} eventName
    * @param {Object} detail Optional details to pass along with event
@@ -497,16 +498,16 @@ export class PureSPA extends LitElement {
   }
 
   #setActiveRoute(route) {
-    if (this.#currentRoute) {
+    if (this.activeRoute) {
       this.fire("leaveroute", {
-        route: this.#currentRoute.route,
+        route: this.activeRoute.route,
       });
     }
 
-    this.#currentRoute = route;
+    this.activeRoute = route;
 
     this.fire("activateroute", {
-      route: this.#currentRoute,
+      route: this.activeRoute,
     });
 
     console.warn("Active Route: ", route.path ?? "INVALID");
@@ -527,7 +528,7 @@ export class PureSPA extends LitElement {
 
   fireRouteComplete() {
     this.fire("routecomplete", {
-      route: this.#currentRoute,
+      route: this.activeRoute,
     });
   }
 
@@ -655,13 +656,6 @@ export class PureSPA extends LitElement {
   // PureApp is a Light DOM Web Component
   createRenderRoot() {
     return this;
-  }
-
-  // Lit properties
-  static get properties() {
-    return {
-      config: { type: Object },
-    };
   }
 
   /**

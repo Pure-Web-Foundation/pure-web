@@ -2,6 +2,8 @@
 @media only screen and (max-width: 600px) {
   :root {
     --header-height: 70px;
+    --padding-w: 10px;
+    --padding-h: 10px;
   }
   pure-web {
     height: 100%;
@@ -11,16 +13,26 @@
     grid-template-areas: "head" "main" "menu";
   }
   pure-web header {
-    padding: 10px;
+    width: calc(100vw - 2 * var(--padding-h));
+    overflow: hidden;
   }
-  pure-web main {
-    padding: 10px;
+  pure-web header h1 {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   pure-web footer {
     display: none;
   }
   pure-web aside {
-    padding: 10px;
+    position: fixed;
+    z-index: 1;
+    background-color: black;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--padding);
   }
   pure-web aside menu {
     flex-direction: row;
@@ -29,6 +41,8 @@
 @media only screen and (min-width: 601px) {
   :root {
     --header-height: 100px;
+    --padding-w: 2rem;
+    --padding-h: 0;
   }
   pure-web {
     grid-template-rows: var(--header-height) 1fr var(--footer-height);
@@ -85,6 +99,8 @@
   color: var(--ac-color, var(--ac-color-default));
   cursor: pointer;
   transition: all 0.1s;
+}
+.ac-container .ac-suggestion .ac-itm .text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -852,6 +868,7 @@ nav[data-dropdown] menu {
   --button-background-hover: var(--accent-color);
   --button-icon-color: #fff;
   -webkit-font-smoothing: antialiased;
+  --padding: var(--padding-h) var(--padding-w);
 }
 
 * {
@@ -866,9 +883,14 @@ html {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   overflow-y: scroll;
   overflow-x: hidden;
-  background-color: hsl(60.8823529412, 0%, 96%);
-  background-image: radial-gradient(circle at 64% 12%, hsl(63.5294117647, 52%, 85%) 6.6887545664%, transparent 44.9843825416%), radial-gradient(circle at 86% 50%, hsl(285.8823529412, 52%, 85%) 6.6887545664%, transparent 44.9843825416%);
-  background-blend-mode: darken, normal;
+  background-color: hsl(278, 62%, 76%);
+  background-image: radial-gradient(circle at 88% 66%, hsl(236, 89%, 99%) 20%, transparent 72%), radial-gradient(circle at 49% 38%, hsl(223, 92%, 82%) 8%, transparent 83%), radial-gradient(circle at 5% 29%, hsl(282, 92%, 99%) 1%, transparent 88%), radial-gradient(circle at 8% 82%, hsl(326, 89%, 58%) 11%, transparent 84%), radial-gradient(circle at 57% 70%, hsl(194, 70%, 76%) 15%, transparent 88%);
+  background-blend-mode: normal, normal, normal, normal, normal;
+}
+
+p {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 body {
@@ -883,7 +905,7 @@ pure-web {
 pure-web header {
   z-index: 10;
   grid-area: head;
-  padding: 2rem;
+  padding: var(--padding);
 }
 pure-web aside {
   grid-area: menu;
@@ -894,7 +916,7 @@ pure-web footer {
 pure-web main {
   grid-area: main;
   max-width: 800px;
-  padding: 0rem 2rem;
+  padding: var(--padding);
 }
 
 ul {
@@ -938,7 +960,7 @@ h2,
 h3 {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   text-transform: uppercase;
-  font-weight: 100;
+  font-weight: 200;
 }
 
 header {
@@ -947,6 +969,7 @@ header {
 header h1 {
   color: var(--heading-color);
   margin: 0;
+  font-size: 1.6rem;
 }
 header h2 {
   font-size: 0.9rem;
@@ -1065,4 +1088,8 @@ header {
 }
 .icons.x-large {
   --icon-size: 256px ;
+}
+
+.showcases > * {
+  margin-bottom: 4rem;
 }/*# sourceMappingURL=main.css.map */

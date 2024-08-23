@@ -1,6 +1,8 @@
 @media only screen and (max-width: 600px) {
-  :root{
+  :root {
     --header-height: 70px;
+    --padding-w: 10px;
+    --padding-h: 10px;
   }
 
   pure-web {
@@ -14,22 +16,33 @@
       "main"
       "menu";
 
-    header{
-      padding: 10px
-    }
-    main{
-      padding: 10px
-    }
+    header {
+      width: calc(100vw - calc(2 * var(--padding-h)));
+      overflow: hidden;
 
+      h1 {
+        display: inline-block;
 
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
 
     footer {
       display: none;
     }
 
     aside {
-      padding: 10px;
-      menu{
+      position: fixed;
+      z-index: 1;
+      background-color: black;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--padding);
+
+      menu {
         flex-direction: row;
       }
     }

@@ -1,7 +1,7 @@
 {
-  "short_name": "PureForms",
-  "name": "Pure Forms",
-  "description": "Pure Forms - Declarative, Data Bound Forms ",
+  "short_name": "pure-web",
+  "name": "Pure Web ",
+  "description": "Pure Web - Web Modules for Pure Standards-based development",
   "display": "standalone",
   "orientation": "any",
   "scope": "/",

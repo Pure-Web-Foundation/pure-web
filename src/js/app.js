@@ -5,19 +5,16 @@ import {
   enhanceInputWithLabel,
   enhanceMasonryGrid,
   enhanceNavDropdownButton,
-  parseHTML,
 } from "./common";
 import { PureSPA } from "./spa";
-import { html } from "lit";
-import { ref, createRef } from "lit/directives/ref.js";
+import { html, nothing } from "lit";
 import { polyfillsLoaded } from "./polyfills/polyfillsLoader";
+import { repeat } from "lit/directives/repeat.js";
 import "./svg-icon";
 
 customElements.define(
   "pure-web",
   class MyApp extends PureSPA {
-    #h1 = createRef();
-    #aside = createRef();
 
     /**
      * Set app.config structure
@@ -45,9 +42,11 @@ customElements.define(
     render() {
       return html`
         <header>
-          <h1 ${ref(this.#h1)}></h1>
+          <h1>${this.renderBreadCrumbs()}</h1>
         </header>
-        <aside ${ref(this.#aside)}></aside>
+        <aside>
+          ${this.renderMenu()}
+        </aside>
         <main>${super.render()}</main>
         <footer>&copy; ${new Date().getFullYear()} Neerventure</footer>
       `;
@@ -56,19 +55,8 @@ customElements.define(
     firstUpdated() {
       super.firstUpdated();
 
-      this.addMenu();
-
-      this.on("routecomplete", () => {
-        this.#h1.value.innerHTML = this.getBreadCrumbs(this.activeRoute)
-          .map((r) => {
-            return `<a href=${r.url}>${r.name}</a>`;
-          })
-          .join("/");
-      });
-
       app.on("activateroute", (e) => {
         const activeUrl = e.detail.route.path + "/";
-
         this.renderRoot.querySelectorAll("[href]").forEach((anchor) => {
           const href = anchor.getAttribute("href") + "/";
 
@@ -78,17 +66,36 @@ customElements.define(
       });
     }
 
-    addMenu() {
-      const menu = document.createElement("menu");
-      for (const page of this.config.pages.filter((p) => {
-        return !p.parentRoute;
-      })) {
-        const li = parseHTML(
-          /*html*/ `<li><a href="${page.path}">${page.name}</a></li>`
-        )[0];
-        menu.appendChild(li);
-      }
-      this.#aside.value.appendChild(menu);
+    renderMenu(){
+      const items = this.config.pages.filter((p) => {
+        return !p.parentRoute && !p.hidden;
+      });
+      return html`<menu>
+      ${repeat(items, (item) => {
+        return html`<li><a href="${item.path}">${item.name}</a></li>`;
+      })}
+      </menu>`;
+    }
+
+    renderBreadCrumbs() {
+      if (!this.activeRoute) return nothing;
+
+      const breadcrumbs = this.getBreadCrumbs(this.activeRoute);
+
+      return html`
+        ${this.renderHomeLinkIfNeeded()}
+        ${repeat(breadcrumbs, (item, index) => {
+          return html`<a href=${item.url}>${item.name}</a> ${index <
+            breadcrumbs.length - 1
+              ? "/"
+              : ""}`;
+        })}
+      `;
+    }
+
+    renderHomeLinkIfNeeded(){
+      if (this.activeRoute?.path === "/") return nothing;
+      return html`<a href="/">${app.config.routes["/"].name}</a>/`
     }
   }
 );
