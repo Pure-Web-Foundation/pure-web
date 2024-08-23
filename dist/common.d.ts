@@ -83,3 +83,8 @@ export function addStyleSheet(cssText: string): string;
  * @returns {String }
  */
 export function generateHash(str: string, seed?: number): string;
+/**
+ * Enhance buttons with [data-prepend-icon] and [data-append-icon]
+ * @param {HTMLButtonElement} button
+ */
+export function enhanceButtonWithIcon(button: HTMLButtonElement): void;

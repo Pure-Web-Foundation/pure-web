@@ -5,6 +5,7 @@ import {
   enhanceInputWithLabel,
   enhanceMasonryGrid,
   enhanceNavDropdownButton,
+  enhanceRangeStars,
 } from "./common";
 import { PureSPA } from "./spa";
 import { html, nothing } from "lit";
@@ -15,7 +16,6 @@ import "./svg-icon";
 customElements.define(
   "pure-web",
   class MyApp extends PureSPA {
-
     /**
      * Set app.config structure
      */
@@ -26,13 +26,16 @@ customElements.define(
     constructor() {
       super();
 
-      this.enhancers.add("[data-label]", enhanceInputWithLabel);
       this.enhancers.add("nav[data-dropdown]", enhanceNavDropdownButton);
       this.enhancers.add(
         "button[data-prepend-icon], button[data-append-icon]",
         enhanceButtonWithIcon
       );
       this.enhancers.add(".masonry", enhanceMasonryGrid);
+
+      this.enhancers.add("input[type='range'].stars-rating", enhanceRangeStars);
+
+      this.enhancers.add("[data-label]", enhanceInputWithLabel);
     }
 
     async beforeRouting() {
@@ -44,9 +47,7 @@ customElements.define(
         <header>
           <h1>${this.renderBreadCrumbs()}</h1>
         </header>
-        <aside>
-          ${this.renderMenu()}
-        </aside>
+        <aside>${this.renderMenu()}</aside>
         <main>${super.render()}</main>
         <footer>&copy; ${new Date().getFullYear()} Neerventure</footer>
       `;
@@ -66,14 +67,14 @@ customElements.define(
       });
     }
 
-    renderMenu(){
+    renderMenu() {
       const items = this.config.pages.filter((p) => {
         return !p.parentRoute && !p.hidden;
       });
       return html`<menu>
-      ${repeat(items, (item) => {
-        return html`<li><a href="${item.path}">${item.name}</a></li>`;
-      })}
+        ${repeat(items, (item) => {
+          return html`<li><a href="${item.path}">${item.name}</a></li>`;
+        })}
       </menu>`;
     }
 
@@ -93,9 +94,9 @@ customElements.define(
       `;
     }
 
-    renderHomeLinkIfNeeded(){
+    renderHomeLinkIfNeeded() {
       if (this.activeRoute?.path === "/") return nothing;
-      return html`<a href="/">${app.config.routes["/"].name}</a>/`
+      return html`<a href="/">${app.config.routes["/"].name}</a>/`;
     }
   }
 );

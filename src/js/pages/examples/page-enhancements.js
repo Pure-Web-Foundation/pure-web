@@ -4,137 +4,155 @@ import { AutoComplete } from "../../autocomplete";
 import { parseHTML } from "../../common";
 
 export class PageEnhancements extends PureSPA.Page {
-  static get properties(){
+  static get properties() {
     return {
-      readyToRenderTimeBasedDropDown: { type: Boolean}
-    }
+      readyToRenderTimeBasedDropDown: { type: Boolean },
+    };
   }
 
   render() {
     return html`
       <div class="showcases">
-      <div>
-        <h3>Enhanced inputs</h3>
+        <div>
+          <h3>Enhanced inputs</h3>
 
-        <code> import { enhanceInputWithLabel } from "pure-web/common"; </code>
+          <code>
+            import { enhanceInputWithLabel } from "pure-web/common";
+          </code>
 
-        <input
-          name="test"
-          placeholder="Enter your full name..."
-          type="text"
-          data-label="Your name"
-          maxlength="25"
-        />
-      </div>
+          <input
+            name="test"
+            placeholder="Enter your full name..."
+            type="text"
+            data-label="Your name"
+            maxlength="25"
+          />
+        </div>
 
-      <div>
-        <h3>Dropdown Button</h3>
+        <div>
+          <h3>Dropdown Button</h3>
 
-        <code>
-          import { enhanceNavDropdownButton } from "pure-web/common";
-        </code>
+          <code>
+            import { enhanceNavDropdownButton } from "pure-web/common";
+          </code>
 
-        <nav data-dropdown class="align-left">
-          <button data-prepend-icon="menu"></button>
-          <menu>
-            <li><a href="/account">Account</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li><a href="#" @click=${this.optionsClick}>Special options</a></li>
-            <li><hr /></li>
-            <li><a href="/sign-out">Sign out</a></li>
-          </menu>
-        </nav>
-      </div>
+          <nav data-dropdown class="align-left">
+            <button data-prepend-icon="menu"></button>
+            <menu>
+              <li><a href="/account">Account</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li>
+                <a href="#" @click=${this.optionsClick}>Special options</a>
+              </li>
+              <li><hr /></li>
+              <li><a href="/sign-out">Sign out</a></li>
+            </menu>
+          </nav>
+        </div>
 
-      <div>
-      ${this.renderTimeBasedDropDown()}
-      </div>
+        <div>${this.renderTimeBasedDropDown()}</div>
 
-      <div>
-        <span id="dynamic-dom">
-          This is going to be replaced via DOM manipulation...
-        </span>
-      </div>
+        <div>
+          <span id="dynamic-dom">
+            This is going to be replaced via DOM manipulation...
+          </span>
+        </div>
 
-      <div>
-        <h3>AutoComplete</h3>
+        <div>
+          <h3>AutoComplete</h3>
 
-        <code> import { AutoComplete } from "pure-web/ac"; </code>
+          <code> import { AutoComplete } from "pure-web/ac"; </code>
 
-        <label
-          ><span data-label>Omnibox</span
-          ><input
-            data-prefix="a"
-            @focus=${(e) => {
-              AutoComplete.connect(e, this.autoCompleteOptions);
-            }}
-            type="search"
-            placeholder="Search everything..."
-        /></label>
-      </div>
+          <label
+            ><span data-label>Omnibox</span
+            ><input
+              data-prefix="a"
+              @focus=${(e) => {
+                AutoComplete.connect(e, this.autoCompleteOptions);
+              }}
+              type="search"
+              placeholder="Search everything..."
+          /></label>
+        </div>
+
+        <div>
+          <input
+            id="stars"
+            value="3"
+            type="range"
+            min="1"
+            max="5"
+            step="1"
+            name="stars"
+            class="stars-rating"
+          />
+        </div>
       </div>
     `;
   }
 
-  firstUpdated(){
+  firstUpdated() {
     setTimeout(() => {
-      this.readyToRenderTimeBasedDropDown = true
+      this.readyToRenderTimeBasedDropDown = true;
     }, 2000);
 
     setTimeout(() => {
       const elm = this.querySelector("#dynamic-dom");
 
-      const input = parseHTML(/*html*/`
+      const input = parseHTML(/*html*/ `
         <div>
           <p>Running enhancements on dynamically inserted DOM elements</p>
           <input data-label="Test label" type="email" placeholder="Enter email address" />
         </div>`)[0];
 
-      elm.innerHTML = ""
-      elm.appendChild(input)
+      elm.innerHTML = "";
+      elm.appendChild(input);
     }, 3000);
   }
 
-  renderTimeBasedDropDown(){
-    if(!this.readyToRenderTimeBasedDropDown)
-      return html`This is going to be rendered via Lit when <em>readyToRenderTimeBasedDropDown</em> changes...`;
+  renderTimeBasedDropDown() {
+    if (!this.readyToRenderTimeBasedDropDown)
+      return html`This is going to be rendered via Lit when
+        <em>readyToRenderTimeBasedDropDown</em> changes...`;
 
     return html`<div>
-    <h3>Dropdown Button (rendered after 2 seconds)</h3>
+      <h3>Dropdown Button (rendered after 2 seconds)</h3>
 
-    <nav data-dropdown class="align-right" style="float: right">
-      <button>Dropdown menu</button>
-      <menu>
-        <li><a href="/account">Account</a></li>
-        <li><a href="/contact">Contact</a></li>
-        <li><a href="#" @click=${this.optionsClick}>Special options</a></li>
-        <li><hr /></li>
-        <li><a href="/sign-out">Sign out</a></li>
-      </menu>
-    </nav>
-  </div>`
+      <nav data-dropdown class="align-right" style="float: right">
+        <button>Dropdown menu</button>
+        <menu>
+          <li><a href="/account">Account</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="#" @click=${this.optionsClick}>Special options</a></li>
+          <li><hr /></li>
+          <li><a href="/sign-out">Sign out</a></li>
+        </menu>
+      </nav>
+    </div>`;
   }
 
   get autoCompleteOptions() {
     return {
       // debug: true,
       categories: {
-        Site:{
+        Site: {
           trigger: (options) => {
             return options.search.length === 0;
           },
-          action: options => {
-            location.href = options.path
+          action: (options) => {
+            location.href = options.path;
           },
           getItems: () => {
-            return app.config.pages.filter(p=>!p.hidden).map(p=>{
-              return {
-                text: p.name,
-                path: p.path,
-                icon: "right"
-              }
-            })
-          }
+            return app.config.pages
+              .filter((p) => !p.hidden)
+              .map((p) => {
+                return {
+                  text: p.name,
+                  path: p.path,
+                  icon: "right",
+                };
+              });
+          },
         },
         Search: {
           trigger: (options) => {

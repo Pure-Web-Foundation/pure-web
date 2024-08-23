@@ -324,3 +324,30 @@ export function enhanceButtonWithIcon(button) {
     return "icon-button";
   });
 }
+
+export function enhanceRangeStars(range) {
+  if (!(range instanceof HTMLInputElement) || range.type !== "range") return;
+
+  const inputTemplate = /*html*/ `<span class="stars-rating">
+    <span class="placeholder"></span>
+  </span>`;
+
+  range.classList.remove("stars-rating");
+  const surroundingSpan = parseHTML(inputTemplate)[0];
+  range.insertAdjacentElement("beforebegin", surroundingSpan);
+  surroundingSpan.querySelector(".placeholder").replaceWith(range);
+
+  range.id = range.id ?? getUniqueName();
+  const output = parseHTML(/*html*/ `<output for="${range.id}"></output>`)[0];
+  surroundingSpan.appendChild(output);
+  const update = (value) => {
+    range.setAttribute("value", value);
+    output.value = value;
+    output.setAttribute("data-stars", "★".repeat(parseInt(value)));
+  };
+  range.addEventListener("input", (e) => {
+    update(e.target.value);
+  });
+
+  update(range.value);
+}

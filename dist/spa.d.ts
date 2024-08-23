@@ -11,6 +11,9 @@ export class PureSPA {
         config: {
             type: ObjectConstructor;
         };
+        activeRoute: {
+            type: ObjectConstructor;
+        };
     };
     /**
      * @returns {WidgetEnabledPage} Class that can be extended from in Routes that also have a Widget.
@@ -57,10 +60,6 @@ export class PureSPA {
      */
     getTransitionType(): "forwards" | "backwards" | undefined;
     /**
-     * Gets the active route
-     */
-    get activeRoute(): any;
-    /**
      * Dispatch app-level event
      * @param {String} eventName
      * @param {Object} detail Optional details to pass along with event
@@ -82,6 +81,7 @@ export class PureSPA {
      * Subclass this
      */
     beforeRouting(): Promise<void>;
+    activeRoute: any;
     fireRouteComplete(): void;
     matchRouteWhenReady(): Promise<any>;
     matchRoute(): any;
@@ -120,6 +120,12 @@ export class PureSPA {
      * @returns {Boolean}
      */
     readyToRoute(): boolean;
+    /**
+     * Gets the breadcrumps of the given route
+     * @param {Object} route
+     * @returns {Array} array with the breadcrumbs.
+     */
+    getBreadCrumbs(route: Object): any[];
     #private;
 }
 /**

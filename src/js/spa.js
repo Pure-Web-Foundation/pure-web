@@ -327,7 +327,7 @@ export class PureSPA extends LitElement {
   static get properties() {
     return {
       config: { type: Object },
-      activeRoute: { type: Object }
+      activeRoute: { type: Object },
     };
   }
 
@@ -768,6 +768,7 @@ export class PureSPA extends LitElement {
 
     const recurse = (p) => {
       const route = this.config.routes[p];
+      if (!route) return;
       ar.push({
         name: route.name,
         url: route.route,
