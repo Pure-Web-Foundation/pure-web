@@ -1,24 +1,28 @@
 /* range-rating web component */
+:root {
+  --range-font-size-default: 28px;
+  --range-font-size: var(--range-font-size-default);
+  --range-bg-color-default: white;
+}
+
 span.stars-rating {
-  display: block;
+  --f-size: var(--font-size, var(--range-font-size));
+  display: inline-block;
   position: relative;
+  background-color: var(--input-bg-color, var(--range-bg-color-default));
+  height: calc(var(--f-size) * 1.45);
+  border-radius: var(--border-radius, 0.5rem);
 }
 span.stars-rating input[type=range] {
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
   display: block;
-  width: auto !important;
-  padding-left: 10px;
-  padding-right: 10px;
-  background: var(--color-surface-100, #e8e8e8);
-  border-radius: 4px;
+  width: calc(10px + var(--range-font-size) * var(--max-value));
+  height: calc(var(--f-size) * 1.45);
+  opacity: 0;
   outline: none;
   cursor: pointer;
   border-bottom: 2px solid transparent;
 }
 span.stars-rating input[type=range]::-webkit-slider-thumb {
-  height: 28px;
   margin-top: 10px;
   opacity: 0;
 }
@@ -26,17 +30,22 @@ span.stars-rating input[type=range]:focus {
   border-bottom-color: var(--color-accent, #77aaff);
 }
 span.stars-rating output {
-  position: relative;
-  font-size: 28px;
+  position: absolute;
+  pointer-events: none;
+  display: inline-block;
+  font-size: 0;
   color: transparent;
+  overflow: visible;
+  top: 0px;
+  left: 10px;
 }
 span.stars-rating output::after {
+  width: inherit;
+  font-size: var(--f-size);
   pointer-events: none;
   letter-spacing: 3px;
   display: block;
-  position: absolute;
+  position: relative;
   content: attr(data-stars);
   color: var(--color-accent, #feab07);
-  top: -37px;
-  left: 10px;
 }/*# sourceMappingURL=range-stars.css.map */

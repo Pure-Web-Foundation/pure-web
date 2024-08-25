@@ -88,3 +88,4 @@ export function generateHash(str: string, seed?: number): string;
  * @param {HTMLButtonElement} button
  */
 export function enhanceButtonWithIcon(button: HTMLButtonElement): void;
+export function enhanceRangeStars(range: any): void;

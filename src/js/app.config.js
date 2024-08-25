@@ -4,31 +4,35 @@ import { PageMasonry } from "./pages/examples/page-masonry";
 import { PageExamples } from "./pages/examples/";
 import { PageEnhancements } from "./pages/examples/page-enhancements";
 import { name } from "../../package.json";
-import { PageSPA } from "./pages/spa/index";
+import { PageCMS } from "./pages/cms-page";
+
 export const config = {
   routes: {
     "/": {
       name: name,
       run: PageHome,
-      hidden: true
+      hidden: true,
     },
     "/about": {
-      run: PageAbout
+      run: PageAbout,
     },
-    "/spa":{
-      run: PageSPA
+    "/publications": {
+      run: PageCMS,
+      routes: {
+        "/*" : {},
+      },
     },
     "/examples": {
       run: PageExamples,
       routes: {
-        "/masonry":{
-          run: PageMasonry
+        "/masonry": {
+          run: PageMasonry,
         },
-        "/enhancements":{
+        "/enhancements": {
           run: PageEnhancements,
-          name: "Other enhancements"
-        }
-      }
-    }
-  }
+          name: "Other enhancements",
+        },
+      },
+    },
+  },
 };

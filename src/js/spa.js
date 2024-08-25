@@ -86,7 +86,8 @@ class PureSPAConfig {
         const hasPattern =
           subRouteName.indexOf(":") !== -1 ||
           subRouteName.indexOf("?") !== -1 ||
-          subRouteName.indexOf("#") !== -1;
+          subRouteName.indexOf("#") !== -1 ||
+          subRouteName.indexOf("*") !== -1;
 
         if (hasPattern)
           cleanSubRouteName = cleanSubRouteName.replace(
@@ -769,10 +770,12 @@ export class PureSPA extends LitElement {
     const recurse = (p) => {
       const route = this.config.routes[p];
       if (!route) return;
-      ar.push({
-        name: route.name,
-        url: route.route,
-      });
+
+      if (!route.hidden && !route.isDetail)
+        ar.push({
+          name: route.name,
+          url: route.route,
+        });
       if (route.parentRoute) recurse(route.parentRoute);
     };
 

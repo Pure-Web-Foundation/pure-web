@@ -8,8 +8,11 @@ export namespace config {
         "/about": {
             run: typeof PageAbout;
         };
-        "/spa": {
-            run: typeof PageSPA;
+        "/publications": {
+            run: typeof PageCMS;
+            routes: {
+                "/*": {};
+            };
         };
         "/examples": {
             run: any;
@@ -27,6 +30,6 @@ export namespace config {
 }
 import { PageHome } from "./pages/page-home";
 import { PageAbout } from "./pages/page-about";
-import { PageSPA } from "./pages/spa/index";
+import { PageCMS } from "./pages/cms-page";
 import { PageMasonry } from "./pages/examples/page-masonry";
 import { PageEnhancements } from "./pages/examples/page-enhancements";

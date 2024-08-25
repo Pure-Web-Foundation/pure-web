@@ -13,8 +13,13 @@ export class PageEnhancements extends PureSPA.Page {
   render() {
     return html`
       <div class="showcases">
+
+        <h2>Enhanced inputs</h2>
+
         <div>
-          <h3>Enhanced inputs</h3>
+
+          <h3>Containing label with input (material style)</h3>
+
 
           <code>
             import { enhanceInputWithLabel } from "pure-web/common";
@@ -26,6 +31,33 @@ export class PageEnhancements extends PureSPA.Page {
             type="text"
             data-label="Your name"
             maxlength="25"
+          />
+        </div>
+
+        <div>
+
+          <h3>Stars rating using a simple enhancement</h3>
+
+          <code> &lt;input
+          value="3"
+          type="range"
+          min="1"
+          max="10"
+          step="1"
+          class="stars-rating"&gt; </code>
+
+          <p>... and in your app:</p>
+          <code>
+            this.enhancers.add("input[type='range'].stars-rating", enhanceRangeStars);
+          </code>
+
+          <input
+            value="3"
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            class="stars-rating"
           />
         </div>
 
@@ -63,6 +95,19 @@ export class PageEnhancements extends PureSPA.Page {
 
           <code> import { AutoComplete } from "pure-web/ac"; </code>
 
+          <p>... and a small connecting piece of JS</p>
+
+          <code>
+            &lt;input
+              data-prefix="a"
+              &commat;focus=&dollar;{(e) => {
+                AutoComplete.connect(e, this.autoCompleteOptions);
+              }}
+              type="search"
+              placeholder="Search everything..."
+            /&gt;
+            </code>
+
           <label
             ><span data-label>Omnibox</span
             ><input
@@ -75,18 +120,7 @@ export class PageEnhancements extends PureSPA.Page {
           /></label>
         </div>
 
-        <div>
-          <input
-            id="stars"
-            value="3"
-            type="range"
-            min="1"
-            max="5"
-            step="1"
-            name="stars"
-            class="stars-rating"
-          />
-        </div>
+
       </div>
     `;
   }

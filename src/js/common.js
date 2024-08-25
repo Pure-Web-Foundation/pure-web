@@ -336,9 +336,14 @@ export function enhanceRangeStars(range) {
   const surroundingSpan = parseHTML(inputTemplate)[0];
   range.insertAdjacentElement("beforebegin", surroundingSpan);
   surroundingSpan.querySelector(".placeholder").replaceWith(range);
+  range.max = range.max ?? 5;
 
   range.id = range.id ?? getUniqueName();
-  const output = parseHTML(/*html*/ `<output for="${range.id}"></output>`)[0];
+  surroundingSpan.style.setProperty("--max-value", Number(range.max));
+
+  const output = parseHTML(
+    /*html*/ `<output for="${range.id}" data-max="${range.max}"></output>`
+  )[0];
   surroundingSpan.appendChild(output);
   const update = (value) => {
     range.setAttribute("value", value);
