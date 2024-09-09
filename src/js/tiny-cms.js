@@ -1,5 +1,4 @@
-import { cmsData } from "./tiny-cms.data";
-
+// generate Map with index being full slug to each object.
 const createIndex = (root) => {
   const index = new Map();
   const recurse = (o, basePath = "") => {
@@ -22,7 +21,9 @@ const createIndex = (root) => {
 };
 
 export class TinyCMS {
-  constructor() {
+  constructor(cmsData) {
+    if (!cmsData) throw Error("No CMS data passed");
+
     this.data = createIndex(cmsData);
   }
 
@@ -31,7 +32,7 @@ export class TinyCMS {
     if (node)
       return {
         ...node,
-        childPages: Object.values(node.children ?? {}),
+        childPages: Object.values(node.children ?? {})
       };
   }
 }

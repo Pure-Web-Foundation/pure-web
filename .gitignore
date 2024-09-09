@@ -2,3 +2,4 @@ node_modules/
 public/assets/js/
 !/public/assets/js/lib
 !/public/assets/js/polyfills/navigationPolyfill.js
+dist/

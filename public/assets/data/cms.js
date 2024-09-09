@@ -178,4 +178,11 @@ DevOps is not a role. It's a mindset. A culture.
       },
     },
   },
+  "/partners": {
+    title: "Test",
+    body: `aaa`
+  },
+  "/manifesto": {
+    body: ``
+  }
 };

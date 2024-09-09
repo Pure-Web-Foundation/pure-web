@@ -1,6 +1,6 @@
 {
   // Change this to match your project
-  "include": ["src/**/*.js"],
+  "include": ["src/**/*.js", "public/assets/data/cms.js"],
   "compilerOptions": {
     "strict": true,
     "forceConsistentCasingInFileNames": true,

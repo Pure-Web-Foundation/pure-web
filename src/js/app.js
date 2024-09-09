@@ -12,6 +12,7 @@ import { html, nothing } from "lit";
 import { polyfillsLoaded } from "./polyfills/polyfillsLoader";
 import { repeat } from "lit/directives/repeat.js";
 import "./svg-icon";
+import { TinyCMS } from "./tiny-cms";
 
 customElements.define(
   "pure-web",
@@ -38,8 +39,25 @@ customElements.define(
       this.enhancers.add("[data-label]", enhanceInputWithLabel);
     }
 
+    static get properties() {
+      return {
+        page: {
+          type: Object,
+        },
+      };
+    }
+
     async beforeRouting() {
-      return await polyfillsLoaded;
+      const cmsFilePath = "/assets/data/cms.js";
+      const { cmsData } = await import(cmsFilePath);
+      this.cms = new TinyCMS(cmsData);
+      await polyfillsLoaded;
+      return true;
+    }
+
+    routeSet() {
+      this.pageData = this.cms.getPage(location.pathname);
+      console.log("cms data", this.pageData);
     }
 
     render() {
@@ -49,7 +67,10 @@ customElements.define(
         </header>
         <aside>${this.renderMenu()}</aside>
         <main>${super.render()}</main>
-        <footer>&copy; ${new Date().getFullYear()} Neerventure</footer>
+        <footer>
+          &copy; ${new Date().getFullYear()} Neerventure -
+          ${this.activeRoute?.options?.content}
+        </footer>
       `;
     }
 

@@ -226,9 +226,9 @@ export function enhanceMasonryGrid(element) {
     const rowGap = parseInt(
       window.getComputedStyle(element).getPropertyValue("grid-row-gap")
     );
+    const content = item.querySelector(":scope > *") ?? item;
     const rowSpan = Math.ceil(
-      (item.querySelector(".content").getBoundingClientRect().height + rowGap) /
-        (rowHeight + rowGap)
+      (content.getBoundingClientRect().height + rowGap) / (rowHeight + rowGap)
     );
     item.style.gridRowEnd = "span " + rowSpan;
   };

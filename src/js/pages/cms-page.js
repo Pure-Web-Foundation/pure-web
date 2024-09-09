@@ -1,27 +1,12 @@
 import { html } from "lit";
 import { PureSPA } from "../spa";
-
 import { repeat } from "lit/directives/repeat.js";
-import { TinyCMS } from "../tiny-cms";
 
 export class PageCMS extends PureSPA.Page {
-  static get properties() {
-    return {
-      cms_id: {
-        type: String,
-        routeOrigin: "pathname",
-      },
-    };
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    this.cms = new TinyCMS();
-  }
 
   render() {
-    const page = this.cms.getPage(location.pathname);
+
+    const page = app.pageData;
 
     if(!page)
       return app.notFoundPage;

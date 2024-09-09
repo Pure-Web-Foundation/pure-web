@@ -3,7 +3,14 @@ import { PureSPA } from "../../spa";
 import { repeat } from "lit/directives/repeat.js";
 
 export class PageExamples extends PureSPA.Page {
+  static get properties(){
+    return {
+      pageData: {type: Object}
+    }
+  }
   render() {
+
+
     const exampleNodes = app.config.pages.filter((p) => {
       return p.parentRoute === "/examples";
     });

@@ -56,8 +56,9 @@ class PureSPAConfig {
       throw Error("PureSPA static config property mising or malformed.");
 
     const createRender = (path, tagName, widget, properties) => {
-      return (routeData) => {
+      return (routeData, pageData) => {
         properties = PureSPA.mapRouterVariables(tagName, properties, routeData);
+        if (pageData) properties.pageData = pageData;
 
         return PureSPA.createCustomTagLitHtml(tagName, {
           routeKey: path,
@@ -123,7 +124,11 @@ class PureSPAConfig {
         }
 
         if (tagName && options.run) {
-          customElements.define(tagName, options.run);
+          const existing = customElements.getName(options.run);
+
+          if (!existing) {
+            customElements.define(tagName, options.run);
+          }
         }
 
         this.#routes[path] = {
@@ -324,6 +329,14 @@ export class PureSPA extends LitElement {
     window.app = this;
   }
 
+  static register() {
+    registerDerivedClass(this);
+  }
+  
+  static unregister() {
+    unregisterDerivedClass(this);
+  }
+
   // Lit properties
   static get properties() {
     return {
@@ -341,7 +354,7 @@ export class PureSPA extends LitElement {
 
       this.routerReady = this.#initializeRouting(); // Compile url patterns
     } catch (ex) {
-      console.error("Configuration error: ", ex.toString());
+      throw Error(`PureSPA configuration error: ${ex.toString()}`);
     }
   }
 
@@ -361,7 +374,8 @@ export class PureSPA extends LitElement {
 
   async #initializeRouting() {
     const me = this;
-    //await polyfillsLoaded; //Make sure that polyfills are loaded before using URLPattern API
+
+    await this.beforeInitialize();
 
     const routes = {};
     for (const [path, options] of Object.entries(this.config.routes)) {
@@ -395,7 +409,7 @@ export class PureSPA extends LitElement {
       event.intercept({
         async handler() {
           document.startViewTransition(() => {
-            me.setRouteContent(route.data);
+            me.#setRoute(route);
 
             // Scroll to top of page.
             window.scrollTo({
@@ -412,6 +426,13 @@ export class PureSPA extends LitElement {
 
     await this.beforeRouting();
   }
+
+  /**
+   * Subclass to pass specific data to a page as a property
+   * @param {Object} route
+   */
+  // eslint-disable-next-line no-unused-vars
+  getPageData(route) {}
 
   /**
    * Gets the transition type for the view transition,
@@ -466,27 +487,41 @@ export class PureSPA extends LitElement {
   }
 
   /**
-   * Subclass this
+    Subclass  beforeInitialize() to load polyfills and do other async initialization
+  */
+  async beforeInitialize(){ 
+  }
+  /**
+   * Subclass beforeRouting() to do stuff when all routes have been created but before the first page is served.
    */
   async beforeRouting() {
-    console.warn(
-      "Subclass async beforeRouting() to load polyfills and do other async initialzation"
-    );
   }
 
   #getRoute(urlString) {
     try {
       const url = new URL(urlString, location);
 
-      const route = this.#findRoute(url);
-      this.#setActiveRoute(route);
+      const findRoute = (url) => {
+        for (const [pattern, options] of this.#routeMap) {
+          const patternResult = pattern.exec(url);
+          if (patternResult)
+            return {
+              ...options,
+              pattern,
+              patternResult,
+            };
+        }
+        return;
+      };
+
+      const route = findRoute(url);
 
       try {
         return {
-          route: route.pattern,
+          pattern: route.pattern,
           data:
             typeof route.renderPage === "function"
-              ? route.renderPage(route.patternResult)
+              ? route.renderPage(route.patternResult, this.getPageData(route))
               : route.renderPage,
           options: route,
         };
@@ -498,35 +533,6 @@ export class PureSPA extends LitElement {
     }
   }
 
-  #setActiveRoute(route) {
-    if (this.activeRoute) {
-      this.fire("leaveroute", {
-        route: this.activeRoute.route,
-      });
-    }
-
-    this.activeRoute = route;
-
-    this.fire("activateroute", {
-      route: this.activeRoute,
-    });
-
-    console.warn("Active Route: ", route.path ?? "INVALID");
-  }
-
-  #findRoute(url) {
-    for (const [pattern, options] of this.#routeMap) {
-      const patternResult = pattern.exec(url);
-      if (patternResult)
-        return {
-          ...options,
-          pattern,
-          patternResult,
-        };
-    }
-    return;
-  }
-
   fireRouteComplete() {
     this.fire("routecomplete", {
       route: this.activeRoute,
@@ -536,10 +542,10 @@ export class PureSPA extends LitElement {
   async matchRouteWhenReady() {
     await this.routerReady; // Wait for compiled patterns and polyfills (if needed)
 
-    const url = window.location.href.split("?")[0];
-    const route = this.#findRoute(url);
+    const url = window.location.href; //.split("?")[0];
+    const route = this.#getRoute(url);
 
-    this.#setActiveRoute(route);
+    this.#setRoute(route, true);
 
     try {
       return typeof route.renderPage === "function"
@@ -617,13 +623,17 @@ export class PureSPA extends LitElement {
 
   /**
    * Called from router
-   * @param {Object} content - route data to render
+   * @param {Object} route - route to render
    */
-  setRouteContent(content) {
-    this.content = content;
+  #setRoute(route) {
+    this.activeRoute = route;
+    this.routeSet();
+    this.content = route.data;
     this.requestUpdate();
     requestAnimationFrame(this.routeComplete.bind(this));
   }
+
+  routeSet() {}
 
   /**
    * Called when a route change is completed.
@@ -736,7 +746,7 @@ export class PureSPA extends LitElement {
   }
 
   /**
-   * Maps routing UrlPattern variables for Lit element dynamic rendering
+   * Maps routing URLPattern variables for Lit element dynamic rendering
    * @param {String} tagName
    * @param {Object} properties
    * @param {Object} routeData
@@ -763,7 +773,7 @@ export class PureSPA extends LitElement {
    * @returns {Array} array with the breadcrumbs.
    */
   getBreadCrumbs(route) {
-    const path = route.path;
+    const path = route.options.path;
 
     const ar = [];
 

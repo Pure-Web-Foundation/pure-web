@@ -16,12 +16,6 @@ export const config = {
     "/about": {
       run: PageAbout,
     },
-    "/publications": {
-      run: PageCMS,
-      routes: {
-        "/*" : {},
-      },
-    },
     "/examples": {
       run: PageExamples,
       routes: {
