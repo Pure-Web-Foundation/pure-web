@@ -329,14 +329,6 @@ export class PureSPA extends LitElement {
     window.app = this;
   }
 
-  static register() {
-    registerDerivedClass(this);
-  }
-  
-  static unregister() {
-    unregisterDerivedClass(this);
-  }
-
   // Lit properties
   static get properties() {
     return {
@@ -395,6 +387,7 @@ export class PureSPA extends LitElement {
       {
         route: "unknown",
         renderPage: this.notFoundPage,
+        isNotFound: true,
       }
     );
 
@@ -426,13 +419,6 @@ export class PureSPA extends LitElement {
 
     await this.beforeRouting();
   }
-
-  /**
-   * Subclass to pass specific data to a page as a property
-   * @param {Object} route
-   */
-  // eslint-disable-next-line no-unused-vars
-  getPageData(route) {}
 
   /**
    * Gets the transition type for the view transition,
@@ -489,32 +475,30 @@ export class PureSPA extends LitElement {
   /**
     Subclass  beforeInitialize() to load polyfills and do other async initialization
   */
-  async beforeInitialize(){ 
-  }
+  async beforeInitialize() {}
   /**
    * Subclass beforeRouting() to do stuff when all routes have been created but before the first page is served.
    */
-  async beforeRouting() {
+  async beforeRouting() {}
+
+  #findRoute(url, strict = false) {
+    for (const [pattern, options] of this.#routeMap) {
+      const patternResult = pattern.exec(url);
+      if (patternResult && (!strict || !options.isNotFound))
+        return {
+          ...options,
+          pattern,
+          patternResult,
+        };
+    }
+    return;
   }
 
   #getRoute(urlString) {
     try {
       const url = new URL(urlString, location);
 
-      const findRoute = (url) => {
-        for (const [pattern, options] of this.#routeMap) {
-          const patternResult = pattern.exec(url);
-          if (patternResult)
-            return {
-              ...options,
-              pattern,
-              patternResult,
-            };
-        }
-        return;
-      };
-
-      const route = findRoute(url);
+      const route = this.#findRoute(url);
 
       try {
         return {
@@ -532,6 +516,13 @@ export class PureSPA extends LitElement {
       console.error("getRoute error: ", ex);
     }
   }
+
+  /**
+   * Subclass to pass specific data to a page as a property
+   * @param {Object} route
+   */
+  // eslint-disable-next-line no-unused-vars
+  getPageData(route) {}
 
   fireRouteComplete() {
     this.fire("routecomplete", {
@@ -622,6 +613,34 @@ export class PureSPA extends LitElement {
   }
 
   /**
+   * Makes router navigate to given URL
+   * @param {String} url path to navigate to
+   * @param {Object} options - Use {strict: false} to always navigate (even if the path doesn't match any route)
+   */
+  goTo(
+    url,
+    options = {
+      strict: true,
+    }
+  ) {
+    const fullURL = new URL(url, location.origin);
+    if (fullURL.origin === location.origin) {
+      const path = fullURL.pathname + fullURL.hash;
+
+      if (options.checkRoute) {
+        const route = this.#findRoute(fullURL, options?.strict);
+        if (route) {
+          window.history.pushState({}, "", path);
+          return;
+        }
+      }
+    }
+
+    if (!options?.strict) location.href = url;
+    else throw new Error("Invalid route");
+  }
+
+  /**
    * Called from router
    * @param {Object} route - route to render
    */
@@ -633,10 +652,15 @@ export class PureSPA extends LitElement {
     requestAnimationFrame(this.routeComplete.bind(this));
   }
 
+  /**
+   * Called when the active route has changed
+   * @abstract
+   */
   routeSet() {}
 
   /**
    * Called when a route change is completed.
+   * @abstract
    */
   routeComplete() {
     // for subclassing...
@@ -672,6 +696,7 @@ export class PureSPA extends LitElement {
   /**
    * Subclass this for any initialization stuff that needs to run before the first route is rendered.
    * @returns {Boolean}
+   * @abstract
    */
   async readyToRoute() {
     // add more stuff that needs to run before routing starts...

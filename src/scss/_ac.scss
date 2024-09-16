@@ -72,7 +72,7 @@
       }
 
       small {
-        color: #999;
+        color: var(--ac-color-description, var(--ac-color-default));
       }
 
       &:hover,
@@ -87,7 +87,7 @@
         }
 
         small {
-          color: white;
+          color: inherit
         }
 
         .category {

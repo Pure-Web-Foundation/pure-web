@@ -22,6 +22,32 @@ export class PageHome extends PureSPA.Page {
           </li>`;
         })}
       </ul>
+
+      <button
+        @click=${() => {
+          app.goTo("https://nos.nl");
+        }}
+      >
+        Go to https://nos.nl
+      </button>
+
+      <button
+        @click=${() => {
+          app.goTo("/test/kakja", {
+            strict: false,
+          });
+        }}
+      >
+        Go to /test/kakja
+      </button>
+
+      <button
+        @click=${() => {
+          app.goTo("/examples/enhancements");
+        }}
+      >
+        Go to /examples/enhancements
+      </button>
     `;
   }
 }
