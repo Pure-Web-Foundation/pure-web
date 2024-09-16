@@ -43,7 +43,7 @@ export class PageHome extends PureSPA.Page {
 
       <button
         @click=${() => {
-          app.goTo("/examples/enhancements");
+          app.goTo("/examples/enhancements#aa");
         }}
       >
         Go to /examples/enhancements

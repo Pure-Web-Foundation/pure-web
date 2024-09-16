@@ -626,14 +626,13 @@ export class PureSPA extends LitElement {
     const fullURL = new URL(url, location.origin);
     if (fullURL.origin === location.origin) {
       const path = fullURL.pathname + fullURL.hash;
-
-      if (options.checkRoute) {
-        const route = this.#findRoute(fullURL, options?.strict);
-        if (route) {
-          window.history.pushState({}, "", path);
-          return;
-        }
+      const route = this.#findRoute(fullURL , options?.strict);
+      
+      if (route) {
+        window.history.pushState({}, "", path);
+        return;
       }
+      
     }
 
     if (!options?.strict) location.href = url;
