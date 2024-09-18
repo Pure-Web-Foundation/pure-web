@@ -415,8 +415,6 @@ export class PureSPA extends LitElement {
       });
     });
 
-    console.log(this.config);
-
     await this.beforeRouting();
   }
 
