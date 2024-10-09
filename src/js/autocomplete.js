@@ -5,24 +5,27 @@ import {
   openCenteredWindow,
   parseHTML,
 } from "./common";
+
+const cssClasses = {
+  result: "ac-suggestion",
+  item: "ac-itm",
+};
+
 /**
  * Generic Autocompletion class for enrichment of textboxes
  */
-export class AutoComplete {
-  cssClasses = {
-    result: "ac-suggestion",
-    item: "ac-itm",
-  };
-
+export class AutoComplete extends EventTarget {
   constructor(parent, textInput, settings) {
+    super();
     this.settings = {
-      emptyResultsText: "No results",
+      emptyResultsText: "",
       ...settings,
     };
     this.container = parent;
     this.input = textInput;
     this.input.setAttribute("autocomplete", "off");
     this.categories = settings.categories || {};
+    this.caches = new Map();
 
     enQueue(this.attach.bind(this));
   }
@@ -47,6 +50,7 @@ export class AutoComplete {
         }, 100);
       }
     }
+    return input._autoComplete;
   }
 
   on(a, b) {
@@ -57,16 +61,19 @@ export class AutoComplete {
   attach() {
     this.resultsDiv = document.createElement("div");
     this.resultsDiv.title = ""; // block
-    this.resultsDiv.classList.add(this.cssClasses.result);
+    this.resultsDiv.classList.add(cssClasses.result);
     this.resultsDiv.style.width = this.container.offsetWidth;
     this.resultsDiv.addEventListener("mousedown", this.resultClick.bind(this));
     this.container.classList.add("ac-container");
     this.input.classList.add("ac-input");
-    const inputStyle =getComputedStyle(this.input);
-    this.container.style.setProperty("--ac-bg-default", inputStyle.backgroundColor);
+    const inputStyle = getComputedStyle(this.input);
+    this.container.style.setProperty(
+      "--ac-bg-default",
+      inputStyle.backgroundColor
+    );
     this.container.style.setProperty("--ac-color-default", inputStyle.color);
     const acc = getComputedStyle(this.input).accentColor;
-    if(acc!=="auto")
+    if (acc !== "auto")
       this.container.style.setProperty("--ac-accent-color", acc);
 
     (this.container?.shadowRoot ?? this.container).appendChild(this.resultsDiv);
@@ -80,10 +87,10 @@ export class AutoComplete {
         this.settings.throttleInputMs ?? 300
       )
     )
-    .on("focus", this.focusHandler.bind(this))
-    .on("focusout", this.blurHandler.bind(this))
-    .on("keyup", this.keyUpHandler.bind(this))
-    .on("keydown", this.keyDownHandler.bind(this));
+      .on("focus", this.focusHandler.bind(this))
+      .on("focusout", this.blurHandler.bind(this))
+      .on("keyup", this.keyUpHandler.bind(this))
+      .on("keydown", this.keyDownHandler.bind(this));
   }
 
   controller() {
@@ -108,8 +115,8 @@ export class AutoComplete {
     let length = this.acItems.length;
     this.rowIndex = this.rowIndex + add;
 
-    if (this.rowIndex < 0) {
-      this.rowIndex = length - 1;
+    if (this.rowIndex <= 0) {
+      this.rowIndex = 0;
     } else if (this.rowIndex > length - 1) {
       this.rowIndex = 0;
     }
@@ -158,7 +165,7 @@ export class AutoComplete {
         search: this.input.value,
       };
 
-      div.classList.add("active");
+      div.classList.add("ac-active");
 
       setTimeout(() => {
         this.controller().hide();
@@ -188,12 +195,16 @@ export class AutoComplete {
   }
 
   setText(options) {
-    this.input.value = options.text;
+    if (this.container.autoCompleteInput) {
+      //this.control.autoCompleteInput.value = options.text;
+    } else {
+      this.container.value = options.text;
+    }
     this.controller().hide();
   }
 
   resultClick(event) {
-    this.selectResult(event.target.closest(`.${this.cssClasses.item}`));
+    this.selectResult(event.target.closest(`.${cssClasses.item}`));
   }
 
   blurHandler() {
@@ -210,24 +221,31 @@ export class AutoComplete {
     if (!this.resultsDiv) return;
     this.resultsDiv.innerHTML = "";
     this.controller().hide();
+
+    if (this.cacheTmr) clearTimeout(this.cacheTmr);
+
+    this.cacheTmr = setTimeout(() => {
+      this.caches.clear();
+    }, 60 * 1000 * 5); // 5 minutes
   }
 
   show() {
     const rect = this.input.getBoundingClientRect();
 
     // check dropDown/dropUp
-    this.settings.direction =
-      rect.top + rect.height + 300 > window.innerHeight ? "up" : "down";
 
-    this.container.setAttribute("data-direction", this.settings.direction);
-
-    if (!this.container.classList.contains("ac-active")) {
+    if (!this.resultsDiv.classList.contains("ac-active")) {
+      this.resultsDiv.style.position = "absolute";
       this.resultsDiv.style.width = `${rect.width}px`;
       this.acItems = this.resultsDiv.querySelectorAll(".ac-itm");
 
+      this.settings.direction =
+        rect.top + rect.height + 500 > window.innerHeight ? "up" : "down";
+      this.resultsDiv.setAttribute("data-direction", this.settings.direction);
+
       if (this.settings.direction === "up") {
         this.resultsDiv.style.top = "unset";
-        this.resultsDiv.style.bottom = `${rect.height}px`;
+        this.resultsDiv.style.bottom = `${rect.height + 20}px`;
         this.rowIndex = this.acItems.length;
       } else {
         this.resultsDiv.style.bottom = "unset";
@@ -235,12 +253,12 @@ export class AutoComplete {
         this.rowIndex = -1;
       }
       this.resultsDiv.style.maxWidth = "unset";
-      this.container.classList.toggle("ac-active", true);
+      this.resultsDiv.classList.toggle("ac-active", true);
     }
   }
 
   hide() {
-    this.container.classList.toggle("ac-active", false);
+    this.resultsDiv.classList.toggle("ac-active", false);
   }
 
   empty() {
@@ -249,7 +267,8 @@ export class AutoComplete {
   }
 
   inputHandler(e) {
-    this.clear();
+    //this.clear();
+    if (this.cacheTmr) clearTimeout(this.cacheTmr);
 
     let options = {
       search: e.target.value,
@@ -257,6 +276,7 @@ export class AutoComplete {
     };
 
     this.container.classList.add("search-running");
+
     this.getItems(options, e).then((r) => {
       this.clear();
       this.resultsHandler(r, options);
@@ -314,6 +334,7 @@ export class AutoComplete {
    */
   suggest(value, e) {
     this.input.focus();
+
     const options = {
       suggest: true,
       search: value || "",
@@ -332,6 +353,23 @@ export class AutoComplete {
     });
   }
 
+  // Sort results based on static (integer) or dynamic (function) sortIndex in category.
+  sort(r, options) {
+    return r.sort((a, b) => {
+      const aCat = options.categories[a.category];
+      const bCat = options.categories[b.category];
+      const aIndex =
+        typeof aCat.sortIndex === "function"
+          ? aCat.sortIndex(options)
+          : aCat.sortIndex ?? 0;
+      const bIndex =
+        typeof bCat.sortIndex === "function"
+          ? bCat.sortIndex(options)
+          : bCat.sortIndex ?? 0;
+      return bIndex > aIndex ? 1 : -1;
+    });
+  }
+
   resultsHandler(r, options) {
     this.results = r;
     this.rowIndex = -1;
@@ -340,7 +378,7 @@ export class AutoComplete {
     const singleItemTemplate = (catHandler, i) => {
       return /*html*/ `
       <div title="${i.tooltip || ""}" data-index="${index}" class="${`${
-        this.cssClasses.item
+        cssClasses.item
       } cat-${i.category} ${i.class ?? ""}`.trim()}">
         ${this.handleImageOrIcon(i)}
         <span class="text">${this.formatResultItem(
@@ -348,7 +386,11 @@ export class AutoComplete {
           options,
           catHandler
         )}</span>
-        <span class="category">${i.category || ""}</span>
+        ${
+          !this.settings.hideCategory
+            ? `<span class="category">${i.category || ""}</span>`
+            : ""
+        }
       </div>`;
     };
 
@@ -399,11 +441,6 @@ export class AutoComplete {
         options: options,
       });
     }
-
-    //if (typeof result === "string")
-    //     this.resultsDiv.appendChild(parseHTML(/*html*/ `${itemResult}`));
-    //   //else if (itemResult) this.resultsDiv.appendChild(itemResult);
-
     return result;
   }
 
@@ -413,6 +450,15 @@ export class AutoComplete {
   }
 
   async getItems(options, e) {
+    console.warn("NEW SEARCH STARTING", options.search);
+
+    if (this.aborter) {
+      this.aborter.abort();
+    }
+
+    let cache = this.caches.get(options.search);
+    if (cache) return cache;
+
     const prop = this.settings.map;
 
     const normalizeItem = (i) => {
@@ -439,14 +485,27 @@ export class AutoComplete {
       return list;
     };
 
+    // Create a new AbortController instance
+    this.aborter = new AbortController();
+    this.aborterSignal = this.aborter.signal;
+
     return new Promise((resolve) => {
+      const internalResolve = (data) => {
+        data = this.sort(data, options);
+
+        if (this.settings.cache !== false)
+          this.caches.set(options.search, data);
+
+        resolve(data);
+      };
+
       if (isUrl(this.items)) {
         if (this.settings.minlength > 0) {
           if (
             !options.search ||
             options.search.length < this.settings.minlength
           ) {
-            resolve([]);
+            internalResolve([]);
             return;
           }
         }
@@ -456,7 +515,7 @@ export class AutoComplete {
             x.json().then((items) => {
               items = map(items);
 
-              resolve(
+              internalResolve(
                 max(
                   items.filter((i) => {
                     return this.isMatch(options, i);
@@ -481,7 +540,7 @@ export class AutoComplete {
         if (simple) {
           this.container.classList.add("simple");
         }
-        resolve(max(map(this.items)));
+        internalResolve(max(map(this.items)));
       } else if (typeof this.items === "function") {
         options.control = this.container;
         let ar = Promise.resolve(this.items(options, e));
@@ -492,10 +551,12 @@ export class AutoComplete {
 
           ar = map(ar);
 
-          resolve(ar);
+          internalResolve(ar);
         });
       } else {
-        return resolve(Promise.resolve(this.items.apply(this, options)));
+        return internalResolve(
+          Promise.resolve(this.items.apply(this, options))
+        );
       }
     });
   }
@@ -503,6 +564,7 @@ export class AutoComplete {
   async items(options) {
     let arr = [];
     options.results = [];
+    options.signal = this.aborterSignal;
 
     for (var c in options.categories) {
       let catHandler = options.categories[c];
@@ -512,6 +574,7 @@ export class AutoComplete {
           return true;
         });
       options.results = arr;
+
       if (catHandler.trigger(options)) {
         let catResults = [];
         try {
@@ -551,24 +614,5 @@ export class AutoComplete {
     return options.search
       ? i.text?.toLowerCase().indexOf(options.search.toLowerCase()) >= 0
       : options.suggest;
-  }
-
-  static textFilter(options, propertyName) {
-    return function (i) {
-      if (!options.search) return true;
-
-      if (i.hidden) return false;
-
-      const prop = propertyName ? i[propertyName] : i;
-      const isMatch = prop.match(new RegExp(options.search, "gi"));
-
-      if (isMatch) return isMatch;
-
-      if (i.config?.tags) {
-        return i.config.tags.some((tag) => {
-          return tag.match(new RegExp(options.search, "gi"));
-        });
-      }
-    };
   }
 }

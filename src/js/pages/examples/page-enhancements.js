@@ -167,6 +167,7 @@ export class PageEnhancements extends PureSPA.Page {
 
   get autoCompleteOptions() {
     return {
+      hideCategry: true,
       // debug: true,
       categories: {
         Site: {

@@ -6,18 +6,26 @@
   --ac-rad: 1rem;
   --ac-box-shadow: 1px 1px 10px rgba(0, 0, 0, .1) --ac-margin: 0;
   --ac-icon-fill-default: var(--ac-accent-color-default);
+  --icon-size: 32px;
+  --ac-itm-height-default: 5rem;
+  --ac-max-height-default: 300px;
 }
 
 .ac-container {
   .ac-suggestion {
-    background-color: transparent;
-    max-height: var(--ac-max-height, var(--ac-margin-default));
+    background-color: white;
+    max-height: var(--ac-max-height, var(--ac-max-height-default));
     position: absolute;
     z-index: 99;
     left: 0px;
     padding: 0;
     border-radius: 0 0 1rem 1rem;
     box-shadow: var(--ac-box-shadow);
+    overflow-y: auto;
+
+    &.ac-active{
+      box-shadow: 1px 1px 5px rgba(0, 0, 0, .2);
+    }
 
     .ac-empty {
       padding: 1rem;
@@ -32,7 +40,8 @@
       color: var(--ac-color, var(--ac-color-default));
       cursor: pointer;
       transition: all 0.1s;
-
+      max-height: var(--ac-itm-height, var(--ac-itm-height-default));
+      
       .text{
         overflow: hidden;
         text-overflow: ellipsis;
@@ -65,7 +74,7 @@
     .ac-itm {
 
       border-radius: 0;
-      padding: .8rem .3rem;
+      //padding: .8rem .3rem;
 
       svg-icon {
         --icon-fill-color: var(--ac-icon-fill, var(--ac-accent-color-default));
