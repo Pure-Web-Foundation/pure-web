@@ -45,6 +45,7 @@ class PureSPAConfig {
   #routes = {};
   #pages;
   #widgets;
+  #elementNames = new Map(); // use element map for Safari 17- customElements.getName() not supported
 
   constructor(rawConfig) {
     this.#rawConfig = rawConfig;
@@ -124,10 +125,10 @@ class PureSPAConfig {
         }
 
         if (tagName && options.run) {
-          const existing = customElements.getName(options.run);
+          const existing = this.getElementName(options.run);
 
           if (!existing) {
-            customElements.define(tagName, options.run);
+            this.defineElement(tagName, options.run);
           }
         }
 
@@ -164,6 +165,17 @@ class PureSPAConfig {
         };
       })
       .filter((p) => !p.hidden);
+  }
+
+  // use element map for Safari 17- customElements.getName() not supported
+  getElementName(constructor) {
+    return this.#elementNames.get(constructor) || null;
+  }
+
+  // use element map for Safari 17- customElements.getName() not supported
+  defineElement(tagName, type) {
+    customElements.define(tagName, type);
+    this.#elementNames.set(type, tagName);
   }
 
   /**
@@ -624,13 +636,17 @@ export class PureSPA extends LitElement {
     const fullURL = new URL(url, location.origin);
     if (fullURL.origin === location.origin) {
       const path = fullURL.pathname + fullURL.hash;
-      const route = this.#findRoute(fullURL , options?.strict);
-      
+      const route = this.#findRoute(fullURL, options?.strict);
+
       if (route) {
-        window.history.pushState({}, "", path);
+        if (window._polyfillState?.navigation) {
+          // no support for window.navigation
+          window.location.href = path;
+        } else {
+          window.history.pushState({}, "", path);
+        }
         return;
       }
-      
     }
 
     if (!options?.strict) location.href = url;

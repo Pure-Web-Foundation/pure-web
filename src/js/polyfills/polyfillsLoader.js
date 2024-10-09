@@ -4,19 +4,24 @@
  * See https://developer.chrome.com/articles/urlpattern/ & https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API
  */
 async function LoadPolyfillsIfNeeded() {
+  window._polyfillState = {};
+
   if (!(globalThis && "URLPattern" in globalThis)) {
-    console.log("URLPattern polyfill is needed...");
+    console.log("URLPattern polyfill is needed...")
+    window._polyfillState.URLPattern = true;
     const path = "/assets/js/polyfills/urlpattern-polyfill.js";
     await import(path);
   }
   if (!(globalThis && "navigation" in globalThis)) {
-    console.log("Navigation polyfill is needed...");
+    console.log("Navigation polyfill is needed...")
+    window._polyfillState.navigation = true;
     const path = "/assets/js/polyfills/navigation-polyfill.js";
     await import(path);
   }
 
   if (!(document && "startViewTransition" in document)) {
-    console.log("View-transition polyfill is needed...");
+    console.log("View-transition polyfill is needed...")
+    window._polyfillState.startViewTransition = true;
     const path = "/assets/js/polyfills/view-transition-polyfill.js";
     await import(path);
   }
