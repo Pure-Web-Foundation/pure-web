@@ -169,7 +169,7 @@ export class AutoComplete extends EventTarget {
       div.classList.add("ac-active");
 
       setTimeout(() => {
-        this.controller().hide();
+        this.controller().hide("result-selected");
 
         if (options.action) {
           options.action(options);
@@ -201,7 +201,7 @@ export class AutoComplete extends EventTarget {
     } else {
       this.container.value = options.text;
     }
-    this.controller().hide();
+    this.controller().hide("settext");
   }
 
   resultClick(event) {
@@ -221,7 +221,7 @@ export class AutoComplete extends EventTarget {
 
     if (!this.resultsDiv) return;
     this.resultsDiv.innerHTML = "";
-    this.controller().hide();
+    this.controller().hide("clear");
 
     if (this.cacheTmr) clearTimeout(this.cacheTmr);
 
@@ -231,31 +231,39 @@ export class AutoComplete extends EventTarget {
   }
 
   show() {
-    const rect = this.input.getBoundingClientRect();
-
     // check dropDown/dropUp
 
     if (!this.resultsDiv.classList.contains("ac-active")) {
-      this.resultsDiv.style.position = "absolute";
-      this.resultsDiv.style.width = `${rect.width}px`;
-      this.acItems = this.resultsDiv.querySelectorAll(".ac-itm");
+      const viewBounds = this.getViewBounds();
 
-      this.settings.direction =
-        rect.top + rect.height + 500 > window.innerHeight ? "up" : "down";
+      this.resultsDiv.style.position = "absolute";
+      this.resultsDiv.style.width = `${viewBounds.rect.width}px`;
+
+      this.settings.direction = viewBounds.suggestedDirection;
       this.resultsDiv.setAttribute("data-direction", this.settings.direction);
 
       if (this.settings.direction === "up") {
         this.resultsDiv.style.top = "unset";
-        this.resultsDiv.style.bottom = `${rect.height + 20}px`;
+        this.resultsDiv.style.bottom = `${viewBounds.rect.height + 20}px`;
         this.rowIndex = this.acItems.length;
       } else {
         this.resultsDiv.style.bottom = "unset";
-        this.resultsDiv.style.top = `${rect.height}px`;
+        this.resultsDiv.style.top = `${viewBounds.rect.height}px`;
         this.rowIndex = -1;
       }
       this.resultsDiv.style.maxWidth = "unset";
       this.resultsDiv.classList.toggle("ac-active", true);
     }
+  }
+
+  getViewBounds() {
+    const rect = this.input.getBoundingClientRect();
+
+    return {
+      rect,
+      suggestedDirection:
+        rect.top + rect.height + 500 > window.innerHeight ? "up" : "down",
+    };
   }
 
   hide() {
@@ -302,7 +310,7 @@ export class AutoComplete extends EventTarget {
   keyUpHandler(e) {
     switch (e.key) {
       case "Escape":
-        this.controller().hide();
+        this.controller().hide("escape");
         break;
       case "Enter":
         if (this.getSelectedDiv()) {
@@ -408,6 +416,7 @@ export class AutoComplete extends EventTarget {
       index++;
     });
     if (r.length) {
+      this.acItems = this.resultsDiv.querySelectorAll(".ac-itm");
       this.controller().show();
     } else if (options.search.length) this.controller().empty();
   }
@@ -450,8 +459,6 @@ export class AutoComplete extends EventTarget {
   }
 
   async getItems(options, e) {
-    console.warn("NEW SEARCH STARTING", options.search);
-
     if (this.aborter) {
       this.aborter.abort();
     }

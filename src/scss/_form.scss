@@ -8,7 +8,7 @@ label:has(input[type=search]),
 label:has(input[type=date]),
 label:has(select) {
   position: relative;
-  display: block;
+  display: inline-block;
 
   >span[data-label] {
     display: inline-block;
