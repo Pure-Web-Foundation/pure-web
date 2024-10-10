@@ -302,7 +302,7 @@ export class AutoComplete extends EventTarget {
   keyUpHandler(e) {
     switch (e.key) {
       case "Escape":
-        this.hide();
+        this.controller().hide();
         break;
       case "Enter":
         if (this.getSelectedDiv()) {
