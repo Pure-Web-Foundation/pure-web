@@ -165,8 +165,35 @@ export class PageEnhancements extends PureSPA.Page {
     </div>`;
   }
 
+  // autoCompleteController(ac) {
+  //   return {
+  //     show: () => {
+        
+  //        if (isMobileView()) {
+          
+  //          //ac.container.classList.toggle("is-mobile")
+  //        }
+  //        else ac.show();
+  //     },
+  //     hide: () => {
+  //       if (isMobileView()) {
+  //         //ac.resultsDiv.style.display = "none";
+  //       }
+  //       else ac.hide();
+  //     },
+  //     empty: () => {
+  //       ac.empty();
+  //     },
+  //     clear(){
+  //       ac.clear();
+  //     }
+  //   };
+  // }
+
   get autoCompleteOptions() {
     return {
+      //debug: true,
+      //controller: this.autoCompleteController,
       hideCategry: true,
       // debug: true,
       categories: {

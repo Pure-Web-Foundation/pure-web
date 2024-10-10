@@ -78,7 +78,7 @@ export class AutoComplete extends EventTarget {
 
     (this.container?.shadowRoot ?? this.container).appendChild(this.resultsDiv);
 
-    this.clear();
+    this.controller().clear("attach");
 
     this.on(
       "input",
@@ -106,6 +106,7 @@ export class AutoComplete extends EventTarget {
     return {
       show: this.show.bind(this),
       hide: this.hide.bind(this),
+      clear: this.clear.bind(this),
       empty: () => {},
     };
   }
@@ -185,7 +186,7 @@ export class AutoComplete extends EventTarget {
         var event = new Event("change", { bubbles: true });
         this.input.dispatchEvent(event);
 
-        this.clear();
+        this.controller().clear("result-selected");
 
         const ev = new Event("result-selected");
         ev.detail = options;
@@ -209,7 +210,7 @@ export class AutoComplete extends EventTarget {
 
   blurHandler() {
     setTimeout(() => {
-      if (!this.resultClicked) this.clear();
+      if (!this.resultClicked) this.controller().clear("blurred");
 
       this.resultClicked = false;
     }, 100);
@@ -267,7 +268,6 @@ export class AutoComplete extends EventTarget {
   }
 
   inputHandler(e) {
-    //this.clear();
     if (this.cacheTmr) clearTimeout(this.cacheTmr);
 
     let options = {
@@ -278,7 +278,7 @@ export class AutoComplete extends EventTarget {
     this.container.classList.add("search-running");
 
     this.getItems(options, e).then((r) => {
-      this.clear();
+      this.controller().clear("new-results");
       this.resultsHandler(r, options);
       this.container.classList.remove("search-running");
     });
@@ -323,7 +323,7 @@ export class AutoComplete extends EventTarget {
   }
 
   focusHandler(e) {
-    this.clear();
+    this.controller().clear("focus");
     let value = e.target.value;
     this.suggest(value, e);
   }
@@ -614,5 +614,24 @@ export class AutoComplete extends EventTarget {
     return options.search
       ? i.text?.toLowerCase().indexOf(options.search.toLowerCase()) >= 0
       : options.suggest;
+  }
+
+  static textFilter(options, propertyName) {
+    return function (i) {
+      if (!options.search) return true;
+
+      if (i.hidden) return false;
+
+      const prop = propertyName ? i[propertyName] : i;
+      const isMatch = prop.match(new RegExp(options.search, "gi"));
+
+      if (isMatch) return isMatch;
+
+      if (i.config?.tags) {
+        return i.config.tags.some((tag) => {
+          return tag.match(new RegExp(options.search, "gi"));
+        });
+      }
+    };
   }
 }
