@@ -325,6 +325,10 @@ export function enhanceButtonWithIcon(button) {
   });
 }
 
+/**
+ * Progressively enhances a range input into a social rating control
+ * @param {HtmlElement} range input
+ */
 export function enhanceRangeStars(range) {
   if (!(range instanceof HTMLInputElement) || range.type !== "range") return;
 
@@ -355,4 +359,38 @@ export function enhanceRangeStars(range) {
   });
 
   update(range.value);
+}
+
+/**
+ * Gets a boolean value from a string or number
+ * @param {Object} value
+ * @returns { Boolean }
+ */
+export function toBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") return value.toLowerCase() === "true";
+  if (typeof value === "number") return value !== 0;
+  return false;
+}
+
+/**
+ * Converts a CamelCased string to a string with individual words separated by spaces.
+ * @param { String } text
+ * @returns { String } converted string
+ */
+export function toWords(text) {
+  text = text.replace(/([A-Z])/g, " $1");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * Converts kebab-case string into PascalCase
+ * @param { String } text
+ * @returns { String } CamelCased version of the input string
+ */
+export function kebabToPascal(text) {
+  return text
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join("");
 }

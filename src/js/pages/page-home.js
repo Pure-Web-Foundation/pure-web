@@ -25,10 +25,22 @@ export class PageHome extends PureSPA.Page {
 
       <button
         @click=${() => {
-          app.goTo("https://nos.nl");
+          app.goTo("https://nos.nl", {
+            strict: false
+          });
         }}
       >
         Go to https://nos.nl
+      </button>
+
+      <button
+        @click=${() => {
+          app.goTo("/", {
+            force: true
+          });
+        }}
+      >
+        Reload page
       </button>
 
       <button

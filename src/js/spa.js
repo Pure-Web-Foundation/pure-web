@@ -1,326 +1,17 @@
 import { html, LitElement, css } from "lit";
 import { until } from "lit/directives/until.js";
+import { PureSPAConfig } from "./spa-config";
+import { PureSPAEnhancementRegistry } from "./spa-enhancements";
+import { RoutePage } from "./spa-route-page";
+import { WidgetEnabledRoutePage } from "./spa-widget-route-page";
+import { toBoolean } from "./common";
 
 //#region Constants
-
-const toWords = (text) => {
-  text = text.replace(/([A-Z])/g, " $1");
-  return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-const kebabToPascal = (str) => {
-  return str
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("");
-};
-
-const toBoolean = (value) => {
-  switch (typeof value) {
-    case "boolean":
-      return value;
-    case "string":
-      return ["true", "false"].includes(value.toLowerCase());
-    case "number":
-      return value !== 0;
-    default:
-      return false;
-  }
-};
-
-const isWellFormedConfig = (config) => {
-  return typeof config?.routes === "object";
-};
 
 const BOOLEAN_ATTRIBUTES = "hidden,required,disabled,readonly".split(",");
 //#endregion
 
 const debug = ["localhost", "127.0.0.1"].includes(location.hostname);
-
-/**
- * Pure App Configuration
- */
-class PureSPAConfig {
-  #rawConfig;
-  #routes = {};
-  #pages;
-  #widgets;
-  #elementNames = new Map(); // use element map for Safari 17- customElements.getName() not supported
-
-  constructor(rawConfig) {
-    this.#rawConfig = rawConfig;
-    this.readConfig();
-  }
-
-  readConfig() {
-    if (!isWellFormedConfig(this.#rawConfig))
-      throw Error("PureSPA static config property mising or malformed.");
-
-    const createRender = (path, tagName, widget, properties) => {
-      return (routeData, pageData) => {
-        properties = PureSPA.mapRouterVariables(tagName, properties, routeData);
-        if (pageData) properties.pageData = pageData;
-
-        return PureSPA.createCustomTagLitHtml(tagName, {
-          routeKey: path,
-          widget: widget,
-          routeData: routeData,
-          ...properties,
-        });
-      };
-    };
-
-    const traverseRoutes = (configPart, basePath = "") => {
-      for (const [route, options] of Object.entries(configPart)) {
-        const path = basePath + route;
-        const parentConfig = this.#routes[basePath];
-        let widgetSettings = {};
-
-        if (options.run && options.run.widgetSettings) {
-          widgetSettings = options.run.widgetSettings;
-        }
-
-        let subRouteName = route.substring(1);
-
-        let cleanSubRouteName = (subRouteName || "home")
-          .split("?")[0]
-          .toLowerCase();
-        const hasPattern =
-          subRouteName.indexOf(":") !== -1 ||
-          subRouteName.indexOf("?") !== -1 ||
-          subRouteName.indexOf("#") !== -1 ||
-          subRouteName.indexOf("*") !== -1;
-
-        if (hasPattern)
-          cleanSubRouteName = cleanSubRouteName.replace(
-            new RegExp("/|:|#", "g"),
-            ""
-          );
-
-        let tagName = options.tagName;
-        if (!tagName) {
-          if (hasPattern) {
-            if (!parentConfig) {
-              if (!options.run)
-                throw Error(
-                  "Invalid routing config for subroute (" + basePath + ")"
-                );
-            } else {
-              tagName = parentConfig.tagName;
-
-              if (options.run && parentConfig.run !== options.run) {
-                tagName = `${parentConfig.tagName}-${cleanSubRouteName}`.trim();
-              }
-              //     throw("Cannot use other component on sub-pattern child pages")
-            }
-          } else {
-            if (parentConfig) {
-              tagName = `${parentConfig.tagName}-${subRouteName}`.trim();
-            } else {
-              tagName = `page-${cleanSubRouteName
-                .toLowerCase()
-                .replace(new RegExp("/", "g"), "-")}`;
-            }
-          }
-        }
-
-        if (tagName && options.run) {
-          const existing = this.getElementName(options.run);
-
-          if (!existing) {
-            this.defineElement(tagName, options.run);
-          }
-        }
-
-        this.#routes[path] = {
-          id: tagName.replace(/-/g, "_"),
-          route: path,
-          path: path.split("?")[0],
-          parentRoute: basePath || undefined,
-          isDetail: hasPattern,
-          hidden: options.hidden ?? hasPattern,
-          customPage: options.renderPage,
-          renderPage: options.renderPage ?? createRender(path, tagName),
-          widgetSettings: widgetSettings,
-          customWidget: options.renderWidget,
-          renderWidget:
-            options.renderWidget ?? createRender(path, tagName, true),
-          name: options.name ?? toWords(subRouteName),
-          tagName: tagName,
-          definedBy: options.className ?? kebabToPascal(tagName),
-          ...options,
-        };
-        if (options.routes) {
-          traverseRoutes(options.routes, path);
-        }
-      }
-    };
-
-    traverseRoutes(this.#rawConfig.routes);
-
-    this.#pages = Object.values(this.#routes)
-      .map((options) => {
-        return {
-          ...options,
-        };
-      })
-      .filter((p) => !p.hidden);
-  }
-
-  // use element map for Safari 17- customElements.getName() not supported
-  getElementName(constructor) {
-    return this.#elementNames.get(constructor) || null;
-  }
-
-  // use element map for Safari 17- customElements.getName() not supported
-  defineElement(tagName, type) {
-    customElements.define(tagName, type);
-    this.#elementNames.set(type, tagName);
-  }
-
-  /**
-   * Returns all widgets (either custom ones defined in the config,
-   * or page classes extending WidgetEnabledPage)
-   */
-  get widgets() {
-    const createElement = (t) => {
-      try {
-        return document.createElement(t);
-      } catch {
-        return {};
-      }
-    };
-    if (!this.#widgets)
-      this.#widgets = Object.values(this.#routes)
-        .filter((options) => !options.isDetail)
-        .map((options) => {
-          return {
-            ...options,
-            widget:
-              options.customWidget ||
-              createElement(options.tagName) instanceof
-                PureSPA.WidgetEnabledPage,
-          };
-        })
-        .filter((i) => i.widget);
-
-    return this.#widgets;
-  }
-
-  get routes() {
-    return this.#routes;
-  }
-
-  get pages() {
-    return this.#pages;
-  }
-}
-
-class RoutePage extends LitElement {
-  static get properties() {
-    return {
-      routeKey: { type: String },
-      routeData: { type: Object },
-    };
-  }
-
-  /**
-   * Returns the current route's properties as defined in the configuration
-   */
-  get routeProperties() {
-    return app.config.routes[this.routeKey];
-  }
-
-  // use light DOM
-  createRenderRoot() {
-    return this;
-  }
-}
-
-/**
- * Extends page components to become Widget-enabled
- */
-class WidgetEnabledRoutePage extends RoutePage {
-  static get properties() {
-    return {
-      ...RoutePage.properties,
-      widget: {
-        type: Boolean,
-        attribute: true,
-      },
-    };
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    const isFn = typeof this.constructor.getWidgetSettings === "function";
-    const settings = isFn ? this.constructor.getWidgetSettings() : {};
-    if (settings?.full) {
-      this.setAttribute("full", "");
-    }
-    this.setAttribute("priority", settings.priority ?? 0);
-  }
-
-  render() {
-    if (this.widget) return this.renderWidget();
-
-    return this.renderPage();
-  }
-
-  /**
-   * Renders a widget to display elsewhere
-   */
-  renderWidget() {
-    throw new Error("renderWidget() must be implemented.");
-  }
-
-  /**
-   * Gets the widget's settings
-   */
-  getWidgetSettings() {
-    return {
-      priority: 0,
-      full: false,
-    };
-  }
-
-  /**
-   * Renders the page as a route component
-   */
-  renderPage() {
-    throw new Error("renderPage() must be implemented.");
-  }
-}
-
-/**
- * Progressive enhancers registry
- */
-class PureSPAEnhancementRegistry {
-  #list = new Map();
-
-  add(selector, enhancementFn) {
-    this.#list.set(selector, enhancementFn);
-  }
-
-  run(element) {
-    const length = this.#list.size;
-    if (length === 0) return;
-    for (const [selector, fn] of this.#list) {
-      const enhance = (n, s, fn) => {
-        if (n.hasAttribute("data-enhanced")) return;
-        const result = fn(n);
-        n.setAttribute("data-enhanced", result?.toString() ?? "");
-      };
-
-      if (element.matches(selector)) enhance(element, selector, fn);
-
-      const nodes = [...element.querySelectorAll(selector)];
-
-      for (const node of nodes) enhance(node, selector, fn);
-    }
-  }
-}
 
 /**
  * Light-DOM Lit Container Base Class for SPA routing.
@@ -377,8 +68,6 @@ export class PureSPA extends LitElement {
   }
 
   async #initializeRouting() {
-    const me = this;
-
     await this.beforeInitialize();
 
     const routes = {};
@@ -403,31 +92,45 @@ export class PureSPA extends LitElement {
       }
     );
 
-    window.navigation.addEventListener("navigate", (event) => {
-      if (event.hashChange) return;
-
-      const route = this.#getRoute(event.destination.url);
-      if (!route) return;
-
-      document.documentElement.dataset.transition = this.getTransitionType();
-
-      event.intercept({
-        async handler() {
-          document.startViewTransition(() => {
-            me.#setRoute(route);
-
-            // Scroll to top of page.
-            window.scrollTo({
-              top: 0,
-              left: 0,
-              behavior: "instant",
-            });
-          });
-        },
-      });
-    });
+    this.enableInterception();
 
     await this.beforeRouting();
+  }
+
+  enableInterception() {
+    this.boundNavigate = this.navigate.bind(this);
+    window.navigation.addEventListener("navigate", this.boundNavigate);
+  }
+
+  disableInterception() {
+    window.navigation.removeEventListener("navigate", this.boundNavigate);
+  }
+
+  navigate(event) {
+    const me = this;
+    if (event.hashChange) return;
+
+    const route = this.#getRoute(event.destination.url);
+    if (!route) return;
+
+    document.documentElement.dataset.transition = this.getTransitionType();
+
+    console.log("navigating to", event.destination.url);
+
+    event.intercept({
+      async handler() {
+        document.startViewTransition(() => {
+          me.#setRoute(route);
+
+          // Scroll to top of page.
+          window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: "instant",
+          });
+        });
+      },
+    });
   }
 
   /**
@@ -623,14 +326,21 @@ export class PureSPA extends LitElement {
   }
 
   /**
+   * @typedef {Object} GoToOptions Options for the goTo method.
+   * @property {Boolean} strict - If false, makes goTo() always navigate (even if the path doesn't match any route)
+   * @property {Boolean} force - If true, forces a reload of the page even when the path matches an existing route
+   */
+
+  /**
    * Makes router navigate to given URL
    * @param {String} url path to navigate to
-   * @param {Object} options - Use {strict: false} to always navigate (even if the path doesn't match any route)
+   * @param {GoToOptions} options Options for navigation
    */
   goTo(
     url,
     options = {
       strict: true,
+      force: false,
     }
   ) {
     const fullURL = new URL(url, location.origin);
@@ -639,8 +349,9 @@ export class PureSPA extends LitElement {
       const route = this.#findRoute(fullURL, options?.strict);
 
       if (route) {
-        if (window._polyfillState?.navigation) {
-          // no support for window.navigation
+        // no support for window.navigation, or bypass navigation interception
+        if (window._polyfillState?.navigation || options?.force) {
+          this.disableInterception();
           window.location.href = path;
         } else {
           window.history.pushState({}, "", path);

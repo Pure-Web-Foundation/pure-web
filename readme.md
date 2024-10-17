@@ -161,6 +161,16 @@ In this case, the `PageProfile` class can retrieve the captured route data using
 
 As you can see in the example above, if you use this subroute syntax, the parent route's configured component will also be triggered for the sub route.
 
+## Using `async beforeInitialize()`
+
+If you need to initialize stuff before the first route is served, use the `beforeInitialize()` method:
+
+```js
+  async beforeInitialize() {  
+    // await async stuff
+    await this.init()
+  }
+```
 
 # pure-web/ac 
 

@@ -6,17 +6,24 @@
   --ac-rad: 1rem;
   --ac-box-shadow: 1px 1px 10px rgba(0, 0, 0, .1) --ac-margin: 0;
   --ac-icon-fill-default: var(--ac-accent-color-default);
+  --icon-size: 32px;
+  --ac-itm-height-default: 5rem;
+  --ac-max-height-default: 300px;
 }
 
 .ac-container .ac-suggestion {
-  background-color: transparent;
-  max-height: var(--ac-max-height, var(--ac-margin-default));
+  background-color: white;
+  max-height: var(--ac-max-height, var(--ac-max-height-default));
   position: absolute;
   z-index: 99;
   left: 0px;
   padding: 0;
   border-radius: 0 0 1rem 1rem;
   box-shadow: var(--ac-box-shadow);
+  overflow-y: auto;
+}
+.ac-container .ac-suggestion.ac-active {
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
 }
 .ac-container .ac-suggestion .ac-empty {
   padding: 1rem;
@@ -30,6 +37,7 @@
   color: var(--ac-color, var(--ac-color-default));
   cursor: pointer;
   transition: all 0.1s;
+  max-height: var(--ac-itm-height, var(--ac-itm-height-default));
 }
 .ac-container .ac-suggestion .ac-itm .text {
   overflow: hidden;
@@ -56,13 +64,12 @@
 }
 .ac-container .ac-suggestion .ac-itm {
   border-radius: 0;
-  padding: 0.8rem 0.3rem;
 }
 .ac-container .ac-suggestion .ac-itm svg-icon {
   --icon-fill-color: var(--ac-icon-fill, var(--ac-accent-color-default));
 }
 .ac-container .ac-suggestion .ac-itm small {
-  color: #999;
+  color: var(--ac-color-description, var(--ac-color-default));
 }
 .ac-container .ac-suggestion .ac-itm:hover, .ac-container .ac-suggestion .ac-itm.selected {
   transition: all 0.1s;
@@ -74,7 +81,7 @@
   --icon-fill-color: white;
 }
 .ac-container .ac-suggestion .ac-itm:hover small, .ac-container .ac-suggestion .ac-itm.selected small {
-  color: white;
+  color: inherit;
 }
 .ac-container .ac-suggestion .ac-itm:hover .category, .ac-container .ac-suggestion .ac-itm.selected .category {
   color: inherit;
