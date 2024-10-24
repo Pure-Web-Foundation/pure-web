@@ -145,6 +145,7 @@ export class PureSPA extends LitElement {
     };
 
     const cUrl = (u) => {
+      if (! u.startsWith('http')) u = location.origin + u;
       const url = new URL(u);
       return url.pathname + url.hash;
     };
