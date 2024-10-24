@@ -5,10 +5,10 @@
   "main": "./public/assets/js/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "./spa": "./public/assets/js/spa.js",
-    "./ac": "./public/assets/js/autocomplete.js",
-    "./svg-icon": "./public/assets/js/svg-icon.js",
-    "./common": "./public/assets/js/common.js"
+    "./spa": "./src/js/spa.js",
+    "./ac": "./src/js/autocomplete.js",
+    "./svg-icon": "./src/js/svg-icon.js",
+    "./common": "./src/js/common.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   "dependencies": {
     "lit": "^3.1.4",
     "typescript": "^5.4.5",
-    "urlpattern-polyfill": "^6.0.2"
+    "urlpattern-polyfill": "^10.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.23.0",

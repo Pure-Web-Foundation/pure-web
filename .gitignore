@@ -3,3 +3,4 @@ public/assets/js/
 !/public/assets/js/lib
 !/public/assets/js/polyfills/navigationPolyfill.js
 dist/
+.idea/
