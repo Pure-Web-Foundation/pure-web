@@ -4,7 +4,7 @@ import { PureSPAConfig } from "./spa-config";
 import { PureSPAEnhancementRegistry } from "./spa-enhancements";
 import { RoutePage } from "./spa-route-page";
 import { WidgetEnabledRoutePage } from "./spa-widget-route-page";
-import { toBoolean } from "./common";
+import { startViewTransition, toBoolean } from "./common";
 
 //#region Constants
 
@@ -119,7 +119,7 @@ export class PureSPA extends LitElement {
 
     event.intercept({
       async handler() {
-        document.startViewTransition(() => {
+        startViewTransition(() => {
           me.#setRoute(route);
 
           // Scroll to top of page.

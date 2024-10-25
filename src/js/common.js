@@ -394,3 +394,22 @@ export function kebabToPascal(text) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
 }
+
+/**
+ * Wrapper around document.startViewTransition() that falls back
+ * to directly executing the callback if the browser doesn't
+ * support view transitions.
+ * @param {Function} callback
+ */
+export function startViewTransition(callback) {
+  const fallback = (callback) => {
+    return callback();
+  };
+
+  if (
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+    "startViewTransition" in document
+  )
+    return document.startViewTransition(callback);
+  else return fallback(callback);
+}
