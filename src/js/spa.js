@@ -115,8 +115,6 @@ export class PureSPA extends LitElement {
 
     document.documentElement.dataset.transition = this.getTransitionType();
 
-    console.log("navigating to", event.destination.url);
-
     event.intercept({
       async handler() {
         document.startViewTransition(() => {

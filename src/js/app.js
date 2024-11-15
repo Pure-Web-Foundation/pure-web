@@ -57,7 +57,6 @@ customElements.define(
 
     routeSet() {
       this.pageData = this.cms.getPage(location.pathname);
-      console.log("cms data", this.pageData);
     }
 
     render() {
