@@ -239,7 +239,7 @@ export class AutoComplete extends EventTarget {
       this.resultsDiv.style.position = "absolute";
       this.resultsDiv.style.width = `${viewBounds.rect.width}px`;
 
-      this.settings.direction = viewBounds.suggestedDirection;
+      this.settings.direction = this.settings.direction ?? viewBounds.suggestedDirection;
       this.resultsDiv.setAttribute("data-direction", this.settings.direction);
 
       if (this.settings.direction === "up") {

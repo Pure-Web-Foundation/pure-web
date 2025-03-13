@@ -282,7 +282,6 @@ export class PureSPA extends LitElement {
 
   updated() {
     super.updated();
-
     this.waitForFullRendering();
   }
 
@@ -293,15 +292,23 @@ export class PureSPA extends LitElement {
 
   firstUpdated() {
     const me = this;
+    const enhance = (node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        me.enhancers.run(node);
+      }
+    };
+
     new MutationObserver((mutationsList) => {
       for (let mutation of mutationsList) {
         if (mutation.type === "childList") {
           for (const node of mutation.addedNodes) {
-            if (node.nodeType === Node.ELEMENT_NODE) me.enhancers.run(node);
+            enhance(node);
           }
+        } else if (mutation.type === "attributes") {
+          enhance(mutation.target);
         }
       }
-    }).observe(this, { childList: true, subtree: true });
+    }).observe(this, { childList: true, subtree: true, attributes: true });
   }
 
   /**
