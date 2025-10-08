@@ -5,29 +5,85 @@ A tiny, framework‑agnostic **web component** that helps users **install or ope
 ![pwa-boost desktop banner example](public/assets/img/pwa-boost-desktop.png)
 
 
-> handles **Android install prompt**, **iOS Add to Home Screen help**, **in‑app browsers** (IG/TikTok) with a best‑effort escape ladder, and **desktop QR**.
+## Key Features
 
-## What it does for users
+### 🎯 Smart Device Detection
 
-Shows a banner with your app’s name, icon, and a clear button.
+- **Automatically detects** what device and browser the user is on
+- **Adapts behavior** based on whether they're on mobile, desktop, iOS, Android, or in an in-app browser
+- **Shows different options** depending on the user's environment
 
-### On Android
+### 📱 Mobile Experience
 
-If the app isn’t installed yet, it can trigger the built-in “Install app” prompt.
-If it’s already installed, the button changes to “Open app,” which jumps straight into the app.
+- **Android**: Triggers the native "Install app" browser prompt when available
+- **iOS**: Shows step-by-step instructions for "Add to Home Screen" (since Apple doesn't allow automatic prompts)
+- **Already installed apps**: Changes button to "Open App" instead of install
 
-### On iPhone/iPad (iOS)
+### 💻 Desktop Experience
 
-Since Apple blocks automatic install prompts, it instead shows easy instructions in a fly-out,
-guiding users through the hidden “Add to Home Screen” path.
+- **QR Code generation**: Shows a QR code so users can easily open the app on their phone
+- **Install instructions**: Provides browser-specific guidance for desktop installation
+- **Copy link feature**: Users can copy the app link to share or use later
 
-### On desktop
+### 🚪 In-App Browser Escape
 
-Shows how to install the app there, or a QR code to open it on a phone.
+- **Detects restricted browsers** like Instagram, TikTok, Facebook, etc.
+- **Provides "Open in Browser" button** to escape these limited environments
+- **Includes help instructions** for manual browser switching when needed
 
-### In in-app browsers (Instagram, Facebook, etc.)
+### 🎨 Customization Options
 
-Offers a quick “Open in Browser” button so people can escape those restricted environments.
+- **App branding**: Customize app name, icon, and messaging
+- **Multiple languages**: Built-in support for different locales
+- **Theme support**: Automatic dark/light mode detection
+- **Custom styling**: Full control over colors, fonts, and appearance
+
+### ⚙️ Smart Behavior
+
+- **Installation detection**: Automatically hides if the app is already installed
+- **Snooze functionality**: Users can dismiss the banner for a configurable period (default 7 days)
+- **URL parameter activation**: Can be triggered via specific URL parameters
+- **Manifest validation**: Checks if your PWA meets installation requirements
+
+### 📊 Analytics Integration
+
+- **Event tracking**: Fires custom events for banner visibility, install attempts, dismissals
+- **User journey insights**: Track how users interact with the installation flow
+- **Platform-specific metrics**: See which devices/browsers have the best conversion
+
+### 🔧 Technical Intelligence
+
+- **PWA readiness check**: Validates that your app meets PWA installation requirements
+- **Graceful fallbacks**: Works even when some features aren't available
+- **Accessibility compliant**: Proper ARIA labels and keyboard navigation
+- **Performance optimized**: Tiny footprint with lazy-loading of optional features
+
+## Business Benefits
+
+### For Product Teams
+
+- **Increased app adoption**: Makes PWA installation much more discoverable
+- **Better user experience**: Removes friction from the installation process
+- **Cross-platform consistency**: Same installation flow works everywhere
+- **Data-driven insights**: Track installation funnel performance
+
+### For Development Teams
+
+- **Easy integration**: Drop-in web component, no complex setup
+- **Framework agnostic**: Works with any web technology
+- **Minimal maintenance**: Handles all the platform-specific complexity automatically
+- **Future-proof**: Adapts as PWA standards evolve
+
+## When It Appears
+
+- **Mobile users**: When they visit your site and don't have the app installed
+- **Desktop users**: Always shows (with QR code option)
+- **In-app browsers**: Shows escape option to real browser
+- **Can be forced**: For testing or special campaigns
+- **Respects user choice**: Honors dismissal preferences
+
+This component essentially solves the "PWA discoverability problem" by providing a unified, intelligent interface that guides users through the installation process regardless of their device or browser limitations.
+
 
 ### Why this handling is necessary
 
