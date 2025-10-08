@@ -29,6 +29,16 @@ A web component for SVG sprite display.
 <svg-icon icon="menu"></svg-icon>
 ```
 
+# pwa-boost
+
+A tiny, framework‑agnostic web component that helps users install or open your PWA with an Airbnb‑style bottom banner, plus a fly‑out for QR or install instructions. 
+
+It handles Android install prompt, iOS Add to Home Screen help, in‑app browsers (IG/TikTok) with a best‑effort escape ladder, and desktop QR.
+
+Multilingual support. Fully customizable.
+
+[More info](./pwa-boost-readme.md)
+
 # AutoDefiner
 
 A component to automatically load and define Web Components at runtime.
@@ -66,13 +76,3 @@ ActionRoute.create("/journal", {
   from: () => app.drawer.close()
 });
 ```
-
-# pwa-boost
-
-A tiny, framework‑agnostic web component that helps users install or open your PWA with an Airbnb‑style bottom banner, plus a fly‑out for QR or install instructions. 
-
-It handles Android install prompt, iOS Add to Home Screen help, in‑app browsers (IG/TikTok) with a best‑effort escape ladder, and desktop QR.
-
-Multilingual support. Fully customizable.
-
-[More info](./pwa-boost-readme.md)
