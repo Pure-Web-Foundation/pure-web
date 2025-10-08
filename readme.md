@@ -31,6 +31,8 @@ A web component for SVG sprite display.
 
 # pwa-boost
 
+![pwa-boost desktop banner example](public/assets/img/pwa-boost-desktop.png)
+
 A tiny, framework‑agnostic web component that helps users install or open your PWA with an Airbnb‑style bottom banner, plus a fly‑out for QR or install instructions. 
 
 It handles Android install prompt, iOS Add to Home Screen help, in‑app browsers (IG/TikTok) with a best‑effort escape ladder, and desktop QR.
