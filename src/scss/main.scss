@@ -243,6 +243,12 @@ aside {
   }
 }
 
+nav.spa {  
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 main {
   view-transition-name: main;
 

@@ -1,6 +1,6 @@
 {
   "name": "pure-web",
-  "version": "1.0.40",
+  "version": "1.1.5",
   "description": "Web Modules for Pure Standards-based development",
   "main": "./public/assets/js/index.js",
   "types": "./dist/index.d.ts",
@@ -8,7 +8,10 @@
     "./spa": "./src/js/spa.js",
     "./ac": "./src/js/autocomplete.js",
     "./svg-icon": "./src/js/svg-icon.js",
-    "./common": "./src/js/common.js"
+    "./common": "./src/js/common.js",
+    "./auto-definer": "./src/js/auto-definer.js",
+    "./action-router": "./src/js/action-router.js",
+    "./pwa-boost": "./src/js/pwa-boost.js"
   },
   "repository": {
     "type": "git",

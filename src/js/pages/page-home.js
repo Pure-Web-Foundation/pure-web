@@ -23,43 +23,47 @@ export class PageHome extends PureSPA.Page {
         })}
       </ul>
 
-      <button
-        @click=${() => {
-          app.goTo("https://nos.nl", {
-            strict: false
-          });
-        }}
-      >
-        Go to https://nos.nl
-      </button>
+      <h2>SPA Navigation</h2>
 
-      <button
-        @click=${() => {
-          app.goTo("/", {
-            force: true
-          });
-        }}
-      >
-        Reload page
-      </button>
+      <nav class="spa">
+        <button
+          @click=${() => {
+            app.goTo("https://nos.nl", {
+              strict: false,
+            });
+          }}
+        >
+          Go to https://nos.nl
+        </button>
 
-      <button
-        @click=${() => {
-          app.goTo("/test/kakja", {
-            strict: false,
-          });
-        }}
-      >
-        Go to /test/kakja
-      </button>
+        <button
+          @click=${() => {
+            app.goTo("/", {
+              force: true,
+            });
+          }}
+        >
+          Reload page
+        </button>
 
-      <button
-        @click=${() => {
-          app.goTo("/examples/enhancements#aa");
-        }}
-      >
-        Go to /examples/enhancements
-      </button>
+        <button
+          @click=${() => {
+            app.goTo("/test/non-existent", {
+              strict: false,
+            });
+          }}
+        >
+          Go to /test/non-existent
+        </button>
+
+        <button
+          @click=${() => {
+            app.goTo("/examples/enhancements#aa");
+          }}
+        >
+          Go to /examples/enhancements
+        </button>
+      </nav>
     `;
   }
 }

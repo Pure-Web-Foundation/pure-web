@@ -1,4 +1,5 @@
 import { config } from "./app.config";
+import "./pwa-boost";
 
 import {
   enhanceButtonWithIcon,
@@ -63,12 +64,13 @@ customElements.define(
       return html`
         <header>
           <h1>${this.renderBreadCrumbs()}</h1>
+          <pwa-boost></pwa-boost>
         </header>
         <aside>${this.renderMenu()}</aside>
         <main>${super.render()}</main>
         <footer>
-          &copy; ${new Date().getFullYear()} Neerventure -
-          ${this.activeRoute?.options?.content}
+          &copy; ${new Date().getFullYear()} Neerventure - ${location.pathname}
+          
         </footer>
       `;
     }
