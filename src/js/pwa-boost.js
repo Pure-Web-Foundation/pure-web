@@ -1,9 +1,9 @@
 /* eslint-disable no-empty */
 /**
  * <pwa-boost> — Airbnb‑style PWA adoption banner
- * 
+ *
  * Docs: see pwa-boost-readme.md
- * 
+ *
  * Public domain (CC0).
  */
 import { LitElement, html, css, nothing } from "lit";
@@ -377,8 +377,12 @@ export class PwaBoost extends LitElement {
     addEventListener("beforeinstallprompt", this.#onBip);
     addEventListener("keydown", this.#onKeydown, { passive: true });
     // Aggressive capture on window & document (capture phase)
-    window.addEventListener("beforeinstallprompt", this.#onBip, { capture: true });
-    document.addEventListener("beforeinstallprompt", this.#onBip, { capture: true });
+    window.addEventListener("beforeinstallprompt", this.#onBip, {
+      capture: true,
+    });
+    document.addEventListener("beforeinstallprompt", this.#onBip, {
+      capture: true,
+    });
     // Installed app?
     this.#detectInstalledApp();
 
@@ -406,8 +410,12 @@ export class PwaBoost extends LitElement {
     removeEventListener("beforeinstallprompt", this.#onBip);
     removeEventListener("keydown", this.#onKeydown);
     try {
-      window.removeEventListener("beforeinstallprompt", this.#onBip, { capture: true });
-      document.removeEventListener("beforeinstallprompt", this.#onBip, { capture: true });
+      window.removeEventListener("beforeinstallprompt", this.#onBip, {
+        capture: true,
+      });
+      document.removeEventListener("beforeinstallprompt", this.#onBip, {
+        capture: true,
+      });
     } catch {}
     if (this.#isIOS && "visualViewport" in window) {
       try {
@@ -554,7 +562,9 @@ export class PwaBoost extends LitElement {
   #installReasons;
 
   #onBip = (e) => {
-    try { e.preventDefault(); } catch {}
+    try {
+      e.preventDefault();
+    } catch {}
     this.#deferredPrompt = e;
     this.requestUpdate();
   };
@@ -857,16 +867,34 @@ export class PwaBoost extends LitElement {
     // 7) Required PNG icons: 192x192 and 512x512
     let has192 = false,
       has512 = false;
+    let chosenIcon = null;
+    let smallestSize = Infinity;
+
     const icons = Array.isArray(manifest.icons) ? manifest.icons : [];
     for (const icon of icons) {
       const sizes = (icon.sizes || "").split(/\s+/);
       const type = (icon.type || "").toLowerCase();
       if (!type.includes("png")) continue;
+
+      for (const s of sizes) {
+        const [w, h] = s.split("x").map(Number);
+        if (w && h) {
+          const area = w * h;
+          if (area < smallestSize) {
+            smallestSize = area;
+            chosenIcon = new URL(icon.src, manifestURL).href;
+          }
+        }
+      }
+
       if (sizes.includes("192x192")) has192 = true;
       if (sizes.includes("512x512")) has512 = true;
     }
-    if (!has192) reasons.push("no-192-png");
-    if (!has512) reasons.push("no-512-png");
+
+    // If no icon attribute provided, fall back to manifest’s smallest PNG
+    if (!this.icon && chosenIcon) {
+      this.icon = chosenIcon;
+    }
 
     const ok =
       nameOk &&
