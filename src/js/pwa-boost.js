@@ -149,6 +149,7 @@ export class PwaBoost extends LitElement {
       display: grid;
       place-items: center;
       cursor: pointer;
+      fill: #fff;
     }
     .x {
       width: 12px;
@@ -444,6 +445,7 @@ export class PwaBoost extends LitElement {
       <div class="hostbox">
         <div class="banner" role="region" aria-label=${m("bannerLabel")}>
           <button
+            title=${m("closeAria")}
             class="close"
             @click=${this.#dismiss}
             aria-label=${m("closeAria")}
