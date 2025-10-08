@@ -67,8 +67,7 @@ ActionRoute.create("/journal", {
 });
 ```
 
-
-# <pwa-boost>
+# pwa-boost
 
 A tiny, framework‑agnostic web component that helps users install or open your PWA with an Airbnb‑style bottom banner, plus a fly‑out for QR or install instructions. 
 
