@@ -137,19 +137,16 @@ export class PwaBoost extends LitElement {
 
     .close {
       position: absolute;
-      top: -6px;
-      left: -6px;
-      transform: translate(-25%, -25%);
-      background: #0008;
-      color: #fff;
+      top: 5px;
+      right: 0px;
+      background-color: transparent;
+      color: var(--pb-fg);
+      
       border: 0;
-      border-radius: 999px;
-      width: 28px;
-      height: 28px;
       display: grid;
       place-items: center;
       cursor: pointer;
-      fill: #fff;
+      fill: var(--pb-fg);
     }
     .x {
       width: 12px;
