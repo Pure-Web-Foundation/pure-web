@@ -4,6 +4,7 @@
   "description": "Web Modules for Pure Standards-based development",
   "main": "./public/assets/js/index.js",
   "types": "./dist/index.d.ts",
+  "website": "https://stpurewebpackage.z6.web.core.windows.net/",
   "exports": {
     "./spa": "./src/js/spa.js",
     "./ac": "./src/js/autocomplete.js",
