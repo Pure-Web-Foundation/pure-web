@@ -913,7 +913,7 @@ span.stars-rating output::after {
 }
 
 :root {
-  --accent-color: #dd4477;
+  --accent-color: #a82752;
   --heading-color: var(--accent-color);
   --footer-height: 50px;
   --icon-fill-color: black;
@@ -955,7 +955,7 @@ body {
   max-width: 1200px;
   margin: auto;
   background-color: hsl(278, 62%, 76%);
-  background-image: radial-gradient(circle at 88% 66%, hsl(236, 89%, 99%) 20%, transparent 72%), radial-gradient(circle at 49% 38%, hsl(223, 92%, 82%) 8%, transparent 83%), radial-gradient(circle at 5% 29%, hsl(282, 92%, 99%) 1%, transparent 88%), radial-gradient(circle at 8% 82%, hsl(326, 89%, 58%) 11%, transparent 84%), radial-gradient(circle at 57% 70%, hsl(194, 70%, 76%) 15%, transparent 88%);
+  background: radial-gradient(at 73% 75%, #D3F0F5 0px, transparent 50%), radial-gradient(at 15% 45%, #B0BACF 0px, transparent 50%), radial-gradient(at 59% 31%, #D2CFE3 0px, transparent 50%), radial-gradient(at 19% 75%, #D9A99E 0px, transparent 50%), radial-gradient(at 82% 23%, #B1BF63 0px, transparent 50%) #D4C1C1;
   background-blend-mode: normal, normal, normal, normal, normal;
 }
 
@@ -1021,7 +1021,7 @@ h2,
 h3 {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   text-transform: uppercase;
-  font-weight: 200;
+  font-weight: 400;
 }
 
 header {
@@ -1041,7 +1041,7 @@ header h2 {
 footer {
   height: var(--footer-height);
   color: white;
-  background-color: black;
+  background-color: #333;
   left: 0;
   right: 0;
   bottom: 0;
