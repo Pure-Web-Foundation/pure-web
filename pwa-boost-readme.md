@@ -316,6 +316,14 @@ type Matcher = {
 
 ---
 
+## Demo site
+
+See [Pure Web Demo](https://stpurewebpackage.z6.web.core.windows.net/).
+
+> Fair warning: I’m no designer 😜 but it gets the point across.
+
+
 ## License
 
 CC0 (Public Domain). Use it anywhere.
+
