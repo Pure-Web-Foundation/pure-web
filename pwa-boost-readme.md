@@ -260,25 +260,25 @@ customElements.define("my-app", MyApp);
 
 ## Props
 
-| Prop               | Type                          | Default             | Description                                                                              |
-| ------------------ | ----------------------------- | ------------------- | ---------------------------------------------------------------------------------------- |
-| `app-name`         | `string`                      | document `title`    | App name for strings                                                                     |
-| `icon`             | `string`                      | `''`                | 36×36+ icon URL                                                                          |
-| `locale`           | `'auto' \| string`            | `'auto'`            | Picks from `messages` (`auto` uses NL if `navigator.language` starts with `nl`, else EN) |
-| `activation-param` | `string`                      | `'useapp'`          | URL param that forces visibility                                                         |
-| `snooze-days`      | `number`                      | `7`                 | Days to snooze after dismiss                                                             |
-| `force-show`       | `boolean`                     | `false`             | Force even in standalone                                                                 |
-| `show-on-iab`      | `boolean`                     | `true`              | Show inside in‑app browsers                                                              |
-| `desktop-qr`       | `boolean`                     | `true`              | Enable QR on desktop                                                                     |
-| `qr-url`           | `string`                      | current URL + param | URL encoded in QR                                                                        |
-| `iab-escape-url`   | `string`                      | current URL         | Target for IAB escape attempts                                                           |
-| `theme`            | `'auto' \| 'light' \| 'dark'` | `'auto'`            | Visual theme                                                                             |
-| `storage-key`      | `string`                      | `'pwa-boost'`       | LS key for snooze                                                                        |
-| `cta-text`         | `string`                      | auto                | Overrides CTA                                                                            |
-| `open-url`         | `string`                      | `''`                | Where **OPEN APP** goes                                                                  |
-| `.messages`        | `object`                      | EN only             | i18n dictionary (you extend in `init`)                                                   |
-| `.guides`          | `object`                      | basic               | step arrays per guide key                                                                |
-| `.matchers`        | `Matcher[]`                   | basic               | rules that select a guide key                                                            |
+| Prop               | Type                          | Default                | Description                                                                              |
+| ------------------ | ----------------------------- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| `app-name`         | `string`                      | document `title`       | App name for strings                                                                     |
+| `icon`             | `string`                      | Smallest manifest icon | 36×36+ icon URL                                                                          |
+| `locale`           | `'auto' \| string`            | `'auto'`               | Picks from `messages` (`auto` uses NL if `navigator.language` starts with `nl`, else EN) |
+| `activation-param` | `string`                      | `'useapp'`             | URL param that forces visibility                                                         |
+| `snooze-days`      | `number`                      | `7`                    | Days to snooze after dismiss                                                             |
+| `force-show`       | `boolean`                     | `false`                | Force even in standalone                                                                 |
+| `show-on-iab`      | `boolean`                     | `true`                 | Show inside in‑app browsers                                                              |
+| `desktop-qr`       | `boolean`                     | `true`                 | Enable QR on desktop                                                                     |
+| `qr-url`           | `string`                      | current URL + param    | URL encoded in QR                                                                        |
+| `iab-escape-url`   | `string`                      | current URL            | Target for IAB escape attempts                                                           |
+| `theme`            | `'auto' \| 'light' \| 'dark'` | `'auto'`               | Visual theme                                                                             |
+| `storage-key`      | `string`                      | `'pwa-boost'`          | LS key for snooze                                                                        |
+| `cta-text`         | `string`                      | auto                   | Overrides CTA                                                                            |
+| `open-url`         | `string`                      | `''`                   | Where **OPEN APP** goes                                                                  |
+| `.messages`        | `object`                      | EN only                | i18n dictionary (you extend in `init`)                                                   |
+| `.guides`          | `object`                      | basic                  | step arrays per guide key                                                                |
+| `.matchers`        | `Matcher[]`                   | basic                  | rules that select a guide key                                                            |
 
 ### Matcher shape
 
