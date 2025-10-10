@@ -61,6 +61,7 @@ customElements.define(
     }
 
     render() {
+      
       return html`
         <header>
           <h1>${this.renderBreadCrumbs()}</h1>
@@ -70,10 +71,29 @@ customElements.define(
         <main>${super.render()}</main>
         <footer>
           &copy; ${new Date().getFullYear()} Neerventure - ${location.pathname}
-          
         </footer>
       `;
     }
+
+    // handlePwaBoostInit(e) {
+      
+    //   const el = e.detail.el;
+
+    //   // Example: server-generated image URL
+    //   // el.qrGenerator = async (url) => {
+    //   //   debugger;
+    //   //   const r = await fetch("/api/qr?data=" + encodeURIComponent(url));
+    //   //   const data = await r.json(); // e.g. { img: '/qr/abc.png' } or { svg: '<svg>…</svg>' }
+    //   //   return data;
+    //   // };
+
+    //   //  el.qrGenerator = async (url) => {
+    //   //    const data = { img: "/assets/img/icon-192.png"}
+    //   //    return data;
+    //   //  };
+
+      
+    // }
 
     firstUpdated() {
       super.firstUpdated();

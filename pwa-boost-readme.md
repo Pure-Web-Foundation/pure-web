@@ -327,3 +327,23 @@ See [Pure Web Demo](https://stpurewebpackage.z6.web.core.windows.net/).
 
 CC0 (Public Domain). Use it anywhere.
 
+
+
+## QR generation options (CSP‑friendly)
+
+- **Static image** — set `qr-image` or `.qrImage` to bypass generation.
+  ```html
+  <pwa-boost qr-image="/assets/qr.png"></pwa-boost>
+  ```
+
+- **Custom generator via `init`** — assign an async function to `qrGenerator` that returns an SVG string, an image URL, or an object `{ svg }` / `{ img }`.
+  ```js
+  // in your @init handler
+  el.qrGenerator = async (url) => {
+    // return { svg: myLocalQr.toSvg(url, { size: 116 }) };
+    const r = await fetch('/api/qr?data=' + encodeURIComponent(url));
+    return await r.json(); // { img: '/qr/abc.png' } or { svg: '<svg…>' }
+  };
+  ```
+
+If neither is provided, the component uses the default CDN QR library and renders SVG.

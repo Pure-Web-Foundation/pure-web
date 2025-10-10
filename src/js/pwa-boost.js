@@ -32,6 +32,8 @@ export class PwaBoost extends LitElement {
     messages: { attribute: false },
     guides: { attribute: false },
     matchers: { attribute: false },
+    qrImage: { type: String, attribute: "qr-image" },
+    qrGenerator: { attribute: false },
   };
 
   static styles = css`
@@ -79,7 +81,6 @@ export class PwaBoost extends LitElement {
       --pb-btn-fg: #fff;
     }
     .hostbox {
-      
       display: grid;
       justify-items: center;
     }
@@ -141,7 +142,7 @@ export class PwaBoost extends LitElement {
       right: 0px;
       background-color: transparent;
       color: var(--pb-fg);
-      
+
       border: 0;
       display: grid;
       place-items: center;
@@ -232,6 +233,8 @@ export class PwaBoost extends LitElement {
     this.showOnIab = true;
     this.desktopQr = true;
     this.qrUrl = "";
+    this.qrImage = "";
+    this.qrGenerator = null;
     this.iabEscapeUrl = "";
     this.theme = "auto";
     this.storageKey = "pwa-boost";
@@ -387,6 +390,7 @@ export class PwaBoost extends LitElement {
 
     // Emit init event for external customization
     try {
+      const qrGen = this.qrGenerator;
       this.dispatchEvent(
         new CustomEvent("init", {
           detail: { el: this },
@@ -394,6 +398,11 @@ export class PwaBoost extends LitElement {
           composed: true,
         })
       );
+
+      if (this.qrGenerator !== qrGen) {
+        console.log("[pwa-boost] QR generator set in @init");
+      }
+      this.#ensureQr();
     } catch {}
 
     // Announce visibility (optional analytics)
@@ -560,6 +569,7 @@ export class PwaBoost extends LitElement {
   #isIOS;
   #installOk;
   #installReasons;
+  #qrImageUrl = "";
 
   #onBip = (e) => {
     try {
@@ -611,19 +621,72 @@ export class PwaBoost extends LitElement {
 
   async #ensureQr() {
     try {
-      const mod = await import(
-        "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"
-      );
-      const svg = await mod.default.toString(this.qrUrl, {
-        type: "svg",
-        margin: 1,
-        width: 116,
-      });
-      this.#qrSvg = svg;
-      this.requestUpdate();
-      this.#dispatch("pwa-boost:qr-shown", { url: this.qrUrl });
-    } catch {}
+      // 1) Static image bypass
+      if (this.qrImage) {
+        this.#qrImageUrl = this.qrImage;
+        this.#qrSvg = "";
+        this.requestUpdate();
+        this.#dispatch("pwa-boost:qr-shown", {
+          url: this.qrUrl,
+          source: "static-prop",
+        });
+        return;
+      }
+
+      // 2) Custom generator via @init
+      if (typeof this.qrGenerator === "function") {
+        try {
+          const out = await this.qrGenerator(this.qrUrl);
+          if (typeof out === "string") {
+            if (out.trim().startsWith("<svg")) {
+              this.#qrSvg = out;
+              this.#qrImageUrl = "";
+            } else {
+              this.#qrImageUrl = out;
+              this.#qrSvg = "";
+            }
+          } else if (out && typeof out === "object") {
+            if (out.svg) {
+              this.#qrSvg = out.svg;
+              this.#qrImageUrl = "";
+            } else if (out.img) {
+              this.#qrImageUrl = out.img;
+              this.#qrSvg = "";
+            }
+          }
+          this.requestUpdate();
+          this.#dispatch("pwa-boost:qr-shown", {
+            url: this.qrUrl,
+            source: "custom-generator",
+          });
+          return;
+        } catch {
+          // fall through to default on generator error
+        }
+      }
+
+      if (!this.#qrImageUrl && !this.#qrSvg) {
+        // 3) Default: CDN QR library (unchanged)
+        const mod = await import("https://esm.sh/qrcode@1.5.3");
+        const svg = await mod.toString(this.qrUrl, {
+          type: "svg",
+          margin: 1,
+          width: 116,
+        });
+
+        this.#qrSvg = svg;
+        this.#qrImageUrl = "";
+        this.requestUpdate();
+        this.#dispatch("pwa-boost:qr-shown", {
+          url: this.qrUrl,
+          source: "cdn",
+        });
+      }
+    } catch {
+      // keep silent failure to match prior behavior
+    }
   }
+
   async #copyLink() {
     try {
       await navigator.clipboard.writeText(this.qrUrl);
@@ -683,11 +746,17 @@ export class PwaBoost extends LitElement {
   };
 
   #renderQRFlyout(m) {
+    const temp = this.qrImage
+      ? html`<img alt="QR" src=${this.qrImage} />`
+      : this.#qrImageUrl
+      ? html`<img alt="QR" src=${this.#qrImageUrl} />`
+      : this.#qrSvg
+      ? unsafeSVG(this.#qrSvg)
+      : html`<img alt="QR" src=${this.#fallbackQR()} />`;
+
     return html`
       <div class="flyout-card">
-        ${this.#qrSvg
-          ? unsafeSVG(this.#qrSvg)
-          : html`<img alt="QR" src=${this.#fallbackQR()} />`}
+        ${temp}
         <small>${m("scanOnPhone")}</small>
         <div class="qr-actions">
           <button class="ghost" @click=${this.#ensureQr}>
