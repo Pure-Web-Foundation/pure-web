@@ -122,7 +122,7 @@ export class AutoDefiner {
 
         try {
           // Check if element matches the selector
-          if (element.matches && element.matches(`[${enhancer.selector}]`)) {
+          if (element.matches && element.matches(enhancer.selector)) {
             enhancer.run(element);
             // Mark this enhancer as applied to this element
             appliedEnhancers.add(enhancer.selector);
