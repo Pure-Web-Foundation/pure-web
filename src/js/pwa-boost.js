@@ -38,6 +38,7 @@ export class PwaBoost extends LitElement {
 
   static styles = css`
     :host {
+      pointer-events: none;
       --pb-bg: var(--pwa-boost-bg, #ffffff);
       --pb-fg: var(--pwa-boost-fg, #111);
       --pb-sub: var(--pwa-boost-sub, #6b7280);
