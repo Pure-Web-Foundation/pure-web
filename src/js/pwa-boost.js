@@ -81,11 +81,13 @@ export class PwaBoost extends LitElement {
       --pb-btn-fg: #fff;
     }
     .hostbox {
+      pointer-events: none;
       display: grid;
       justify-items: center;
     }
 
     .banner {
+      pointer-events: all;
       position: relative;
       display: grid;
       grid-template-columns: auto 1fr auto;
