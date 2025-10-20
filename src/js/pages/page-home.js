@@ -64,6 +64,11 @@ export class PageHome extends PureSPA.Page {
           Go to /examples/enhancements
         </button>
       </nav>
+
+      <h2>AutoDefiner</h2>
+
+      <test-comp></test-comp>
+
     `;
   }
 }

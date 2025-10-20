@@ -14,6 +14,7 @@ import { polyfillsLoaded } from "./polyfills/polyfillsLoader";
 import { repeat } from "lit/directives/repeat.js";
 import "./svg-icon";
 import { TinyCMS } from "./tiny-cms";
+import { AutoDefiner } from "pure-web/auto-definer";
 
 customElements.define(
   "pure-web",
@@ -53,6 +54,16 @@ customElements.define(
       const { cmsData } = await import(cmsFilePath);
       this.cms = new TinyCMS(cmsData);
       await polyfillsLoaded;
+
+      // Start watching the whole document. Components are in /assets/wc/<tag>.js
+      this.auto = new AutoDefiner({
+        baseURL: "/auto-define/",
+        // If you have odd filenames:
+        // mapper: (tag) => `wc-${tag}.js`,
+        // Only auto-define for your own namespace:
+        // predicate: (tag) => tag.startsWith("myprefix-"),
+      });
+
       return true;
     }
 
@@ -61,7 +72,6 @@ customElements.define(
     }
 
     render() {
-      
       return html`
         <header>
           <h1>${this.renderBreadCrumbs()}</h1>
@@ -74,26 +84,6 @@ customElements.define(
         </footer>
       `;
     }
-
-    // handlePwaBoostInit(e) {
-      
-    //   const el = e.detail.el;
-
-    //   // Example: server-generated image URL
-    //   // el.qrGenerator = async (url) => {
-    //   //   debugger;
-    //   //   const r = await fetch("/api/qr?data=" + encodeURIComponent(url));
-    //   //   const data = await r.json(); // e.g. { img: '/qr/abc.png' } or { svg: '<svg>…</svg>' }
-    //   //   return data;
-    //   // };
-
-    //   //  el.qrGenerator = async (url) => {
-    //   //    const data = { img: "/assets/img/icon-192.png"}
-    //   //    return data;
-    //   //  };
-
-      
-    // }
 
     firstUpdated() {
       super.firstUpdated();

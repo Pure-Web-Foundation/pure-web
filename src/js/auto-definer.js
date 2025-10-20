@@ -1,61 +1,3 @@
-/* eslint-disable no-console */
-/**
- * Dynamically load and (idempotently) define a set of web components by tag name.
- */
-async function defineWebComponents(...args) {
-  let opts = {};
-  if (args.length && typeof args[args.length - 1] === "object") {
-    opts = args.pop() || {};
-  }
-  const tags = args;
-
-  const {
-    baseURL,
-    mapper = (tag) => `${tag}.js`,
-    onError = (tag, err) => console.error(`[defineWebComponents] ${tag}:`, err),
-  } = opts;
-
-  const base = baseURL
-    ? new URL(
-        baseURL,
-        typeof location !== "undefined" ? location.href : import.meta.url
-      )
-    : new URL("./", import.meta.url);
-
-  const toPascal = (tag) =>
-    tag.toLowerCase().replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
-
-  const loadOne = async (tag) => {
-    try {
-      if (customElements.get(tag)) return { tag, status: "already-defined" };
-
-      const href = new URL(mapper(tag), base).href;
-      const mod = await import(href);
-      const Named = mod?.default ?? mod?.[toPascal(tag)];
-
-      if (!Named) {
-        if (customElements.get(tag)) return { tag, status: "self-defined" };
-        throw new Error(
-          `No export found for ${tag}. Expected default export or named export "${toPascal(
-            tag
-          )}".`
-        );
-      }
-
-      if (!customElements.get(tag)) {
-        customElements.define(tag, Named);
-        return { tag, status: "defined" };
-      }
-      return { tag, status: "race-already-defined" };
-    } catch (err) {
-      onError(tag, err);
-      throw err;
-    }
-  };
-
-  return Promise.all(tags.map(loadOne));
-}
-
 /**
  * Auto-definer that also works inside open Shadow DOM.
  * Automatically defines unknown custom elements (tags with a dash)
@@ -92,14 +34,14 @@ export class AutoDefiner {
       patchAttachShadow = true,
     } = options;
 
-  const pending = new Set(); // tags queued for definition
-  const inFlight = new Set(); // tags currently importing
-  const knownMissing = new Set(); // tags that failed before
-  const perTagModulePath = new Map(); // tag -> explicit module path (from data-module)
-  const shadowObservers = new WeakMap(); // ShadowRoot -> MutationObserver
-  const enhancerApplied = new WeakMap(); // element -> Set of applied enhancer selectors
-  let timer = 0;
-  let stopped = false;
+    const pending = new Set(); // tags queued for definition
+    const inFlight = new Set(); // tags currently importing
+    const knownMissing = new Set(); // tags that failed before
+    const perTagModulePath = new Map(); // tag -> explicit module path (from data-module)
+    const shadowObservers = new WeakMap(); // ShadowRoot -> MutationObserver
+    const enhancerApplied = new WeakMap(); // element -> Set of applied enhancer selectors
+    let timer = 0;
+    let stopped = false;
     let restoreAttachShadow = null;
 
     const applyEnhancers = (element) => {
@@ -116,7 +58,7 @@ export class AutoDefiner {
       // Check each enhancer
       for (const enhancer of enhancers) {
         if (!enhancer.selector || !enhancer.run) continue;
-        
+
         // Skip if this enhancer was already applied to this element
         if (appliedEnhancers.has(enhancer.selector)) continue;
 
@@ -163,7 +105,7 @@ export class AutoDefiner {
     const crawlTree = (rootNode) => {
       // rootNode can be Document, Element, ShadowRoot
       if (!rootNode) return;
-      
+
       // Process the root node if it's an element
       if (rootNode.nodeType === 1) {
         const el = /** @type {Element} */ (rootNode);
@@ -251,7 +193,7 @@ export class AutoDefiner {
         const effectiveMapper = (tag) =>
           perTagModulePath.get(tag) ?? (mapper ? mapper(tag) : `${tag}.js`);
 
-        await defineWebComponents(...tags, {
+        await AutoDefiner.define(...tags, {
           baseURL,
           mapper: effectiveMapper,
           onError: (tag, err) => {
@@ -327,5 +269,63 @@ export class AutoDefiner {
       },
       flush,
     };
+  }
+
+  /**
+   * Dynamically load and (idempotently) define a set of web components by tag name.
+   */
+  static async define(...args) {
+    let opts = {};
+    if (args.length && typeof args[args.length - 1] === "object") {
+      opts = args.pop() || {};
+    }
+    const tags = args;
+
+    const {
+      baseURL,
+      mapper = (tag) => `${tag}.js`,
+      onError = (tag, err) =>
+        console.error(`[defineWebComponents] ${tag}:`, err),
+    } = opts;
+
+    const base = baseURL
+      ? new URL(
+          baseURL,
+          typeof location !== "undefined" ? location.href : import.meta.url
+        )
+      : new URL("./", import.meta.url);
+
+    const toPascal = (tag) =>
+      tag.toLowerCase().replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
+
+    const loadOne = async (tag) => {
+      try {
+        if (customElements.get(tag)) return { tag, status: "already-defined" };
+
+        const href = new URL(mapper(tag), base).href;
+        const mod = await import(href);
+        const Named = mod?.default ?? mod?.[toPascal(tag)];
+
+        if (!Named) {
+          if (customElements.get(tag)) return { tag, status: "self-defined" };
+          throw new Error(
+            `No export found for ${tag}. Expected default export or named export "${toPascal(
+              tag
+            )}".`
+          );
+        }
+
+        if (!customElements.get(tag)) {
+          customElements.define(tag, Named);
+          return { tag, status: "defined" };
+        }
+        return { tag, status: "race-already-defined" };
+      } catch (err) {
+        onError(tag, err);
+        throw err;
+      }
+    };
+
+    return Promise.all(tags.map(loadOne));
   }
 }

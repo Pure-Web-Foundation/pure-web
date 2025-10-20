@@ -52,7 +52,7 @@ A component to automatically load and define Web Components at runtime.
   async yourAsyncInit() {
     // Start watching the whole document. Components are in /assets/wc/<tag>.js
     this.auto = new AutoDefiner({
-      baseURL: "/assets/wc/",
+      baseURL: "/auto-define/",
       // If you have odd filenames:
       // mapper: (tag) => `wc-${tag}.js`,
       // Only auto-define for your own namespace:
@@ -61,6 +61,14 @@ A component to automatically load and define Web Components at runtime.
   }
 
 ```
+
+If you need to initialize some component before it's auto-discovered in the html:
+
+```js
+AutoDefiner.define(["tag-name", ...])
+
+```
+
 
 # ActionRoute 
 
