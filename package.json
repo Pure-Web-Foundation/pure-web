@@ -1,6 +1,6 @@
 {
   "name": "pure-web",
-  "version": "1.1.23",
+  "version": "1.1.24",
   "description": "Web Modules for Pure Standards-based development",
   "main": "./public/assets/js/index.js",
   "types": "./dist/index.d.ts",

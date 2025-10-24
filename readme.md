@@ -43,14 +43,20 @@ Multilingual support. Fully customizable.
 
 # AutoDefiner
 
-A component to automatically load and define Web Components at runtime.
+Imagine your web components work like any other (built-in) html element, by just using the tag in your HTML 🤯...
+
+AutoDefiner automatically notices web components when they're becoming part of the DOM, loading their defining code automatically at runtime.
+
+You can have a really smart bundle splitter, but AutoDefiner will always be smarter.
+
+It effectively handles 'load code on demand' scenarios in by far the best way possible: when it's being used - using only the native DOM and its APIs 🤯.
 
 ```js
 
   import { AutoDefiner } from "pure-web/auto-definer";
 
   async yourAsyncInit() {
-    // Start watching the whole document. Components are in /assets/wc/<tag>.js
+    // Start watching the whole document. Components are in /auto-define/<tag>.js
     this.auto = new AutoDefiner({
       baseURL: "/auto-define/",
       // If you have odd filenames:

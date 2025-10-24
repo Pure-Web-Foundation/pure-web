@@ -1,4 +1,61 @@
 /**
+ * Dynamically load and (idempotently) define a set of web components by tag name.
+ */
+async function defineWebComponents(...args) {
+  let opts = {};
+  if (args.length && typeof args[args.length - 1] === "object") {
+    opts = args.pop() || {};
+  }
+  const tags = args;
+
+  const {
+    baseURL,
+    mapper = (tag) => `${tag}.js`,
+    onError = (tag, err) => console.error(`[defineWebComponents] ${tag}:`, err),
+  } = opts;
+
+  const base = baseURL
+    ? new URL(
+        baseURL,
+        typeof location !== "undefined" ? location.href : import.meta.url
+      )
+    : new URL("./", import.meta.url);
+
+  const toPascal = (tag) =>
+    tag.toLowerCase().replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
+
+  const loadOne = async (tag) => {
+    try {
+      if (customElements.get(tag)) return { tag, status: "already-defined" };
+
+      const href = new URL(mapper(tag), base).href;
+      const mod = await import(href);
+      const Named = mod?.default ?? mod?.[toPascal(tag)];
+
+      if (!Named) {
+        if (customElements.get(tag)) return { tag, status: "self-defined" };
+        throw new Error(
+          `No export found for ${tag}. Expected default export or named export "${toPascal(
+            tag
+          )}".`
+        );
+      }
+
+      if (!customElements.get(tag)) {
+        customElements.define(tag, Named);
+        return { tag, status: "defined" };
+      }
+      return { tag, status: "race-already-defined" };
+    } catch (err) {
+      onError(tag, err);
+      throw err;
+    }
+  };
+
+  return Promise.all(tags.map(loadOne));
+}
+
+/**
  * Auto-definer that also works inside open Shadow DOM.
  * Automatically defines unknown custom elements (tags with a dash)
  * and attach progressive enhancers to given selectors.
@@ -193,7 +250,7 @@ export class AutoDefiner {
         const effectiveMapper = (tag) =>
           perTagModulePath.get(tag) ?? (mapper ? mapper(tag) : `${tag}.js`);
 
-        await AutoDefiner.define(...tags, {
+        await defineWebComponents(...tags, {
           baseURL,
           mapper: effectiveMapper,
           onError: (tag, err) => {
