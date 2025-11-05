@@ -28,7 +28,9 @@ async function defineWebComponents(...args) {
     try {
       if (customElements.get(tag)) return { tag, status: "already-defined" };
 
-      const href = new URL(mapper(tag), base).href;
+      // Allow mapper to return either a string (path) or a URL instance
+      const spec = mapper(tag);
+      const href = spec instanceof URL ? spec.href : new URL(spec, base).href;
       const mod = await import(href);
       const Named = mod?.default ?? mod?.[toPascal(tag)];
 
@@ -72,6 +74,7 @@ async function defineWebComponents(...args) {
  *   observeShadows: boolean = true
  *   enhancers: Array<{selector: string, run: (elem: Element) => void}> = []
  *   patchAttachShadow: boolean = true
+ *   mapper: (tag) => string | URL
  *
  * Returns: { stop(): void, flush(): Promise<void> }
  */
@@ -359,7 +362,9 @@ export class AutoDefiner {
       try {
         if (customElements.get(tag)) return { tag, status: "already-defined" };
 
-        const href = new URL(mapper(tag), base).href;
+        // Allow mapper to return either a string (path) or a URL instance
+        const spec = mapper(tag);
+        const href = spec instanceof URL ? spec.href : new URL(spec, base).href;
         const mod = await import(href);
         const Named = mod?.default ?? mod?.[toPascal(tag)];
 

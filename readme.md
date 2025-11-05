@@ -61,6 +61,11 @@ It effectively handles 'load code on demand' scenarios in by far the best way po
       baseURL: "/auto-define/",
       // If you have odd filenames:
       // mapper: (tag) => `wc-${tag}.js`,
+      // The mapper may also return a full URL (or a URL object),
+      // which lets you load from other folders or a CDN:
+      // mapper: (tag) => `https://cdn.example.com/components/${tag}.js`,
+      // or
+      // mapper: (tag) => new URL(`/components/${tag}.js`, location.href),
       // Only auto-define for your own namespace:
       // predicate: (tag) => tag.startsWith("myprefix-"),
     });
