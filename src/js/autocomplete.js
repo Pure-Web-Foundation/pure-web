@@ -425,6 +425,10 @@ export class AutoComplete extends EventTarget {
     if (i.image) {
       return /*html*/ `<img src="${i.image}"/>`;
     }
+
+    if(typeof(this.settings.iconHandler) === "function") 
+      return this.settings.iconHandler(i);
+
     return /*html*/ `<svg-icon icon="${i.icon}"></svg-icon>`;
   }
 

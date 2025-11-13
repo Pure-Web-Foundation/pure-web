@@ -29,9 +29,19 @@ import { AutoComplete } from "pure-web/ac";
 ```js
   get acOptions() {
     return {
+      // debug: true,
+      // iconHandler: (item) => {
+      //  return `<my-icon-component name="${item.icon}"></my-icon-component>`
+      //},
       categories: {
-        Menu: {
-          // category handling 
+        Menu: { // You can have multiple autocomplete categories, each with separate handling 
+          action: (options) => {
+            console.log(options); // what happens when an autocomplete item is clicked/selected (default: text copied to input)
+          },
+          trigger: (options) => options.search.length > 1, // when is the category's getItems() triggered
+          async getItems: (options) => {
+            return []; // your results 
+          }
         }
       }
     }
