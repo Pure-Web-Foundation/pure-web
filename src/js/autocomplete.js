@@ -62,7 +62,10 @@ export class AutoComplete extends EventTarget {
     this.resultsDiv = document.createElement("div");
     this.resultsDiv.title = ""; // block
     this.resultsDiv.classList.add(cssClasses.result);
-    this.resultsDiv.style.width = this.container.offsetWidth;
+    
+    if(this.container.offsetWidth > 100)
+      this.resultsDiv.style.width = this.container.offsetWidth;
+
     this.resultsDiv.addEventListener("mousedown", this.resultClick.bind(this));
     this.container.classList.add("ac-container");
     this.input.classList.add("ac-input");
