@@ -94,6 +94,9 @@ Back/Forward restore automatically; reload restores if you're already on that pa
 // show drawer with journal UI when the user navigates to /journal
 ActionRoute.create("/journal", {
   to: () => app.drawer.show(html`<journal-ui></journal-ui>`),
-  from: () => app.drawer.close()
+  from: () => app.drawer.close(),
+  in: (exact, segments) => {
+    // called when sub-routes within /journal/ are navigated to
+  }
 });
 ```
