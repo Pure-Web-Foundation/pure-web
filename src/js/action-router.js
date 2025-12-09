@@ -14,7 +14,7 @@ export class ActionRoute {
   static #routes = new Map(); // key -> { to, from, in, match, opened, last }
   static #started = false;
   static #navigationHandler;
-  
+  static #pendingClose = null;
 
   // public: configure before first create()
   static configure({ mode, base } = {}) {
@@ -81,38 +81,40 @@ export class ActionRoute {
     const rec = this.#routes.get(key);
     if (!rec || !rec.opened) return;
 
-    // close UI
+    if (rec.closing) return;
+
     try {
+      rec.closing = true;
       rec.from();
     } catch (e) {
       console.error(e);
+    } finally {
+      rec.opened = false;
+      rec.last = null;
+      rec.closing = false;
     }
-    rec.opened = false;
-
-    // smart URL change: if we created this step, pop; otherwise replace
-    rec.opened = false;
-    rec.last = null;
 
     const st = history.state;
+    const target = this.#pickCloseTarget(rec, st);
+    const cleaned = this.#cleanRouteState(st);
+    const depth = Number.isFinite(st?.__arDepth) ? Number(st.__arDepth) : 0;
     const sameStep = !!st && st.__ar === key;
+
     if (!replace && sameStep) {
-      history.back();
-    } else {
-      const fallback = this.#base || "/";
-      const newURL =
-        this.#mode === "path"
-          ? fallback + location.search + location.hash
-          : "#";
-      const cleaned = st
-        ? (() => {
-            const c = { ...st };
-            delete c.__ar;
-            return c;
-          })()
-        : st;
-      history.replaceState(cleaned, "", newURL);
-      this.#onNav();
+      const steps = Math.max(1, depth + 1);
+      this.#pendingClose = {
+        key,
+        targetPath: target.path,
+        targetUrl: target.url,
+        steps,
+        awaitingPop: false,
+      };
+      this.#drainPendingClose();
+      return;
     }
+
+    history.replaceState(cleaned ?? null, "", target.url);
+    queueMicrotask(() => this.#onNav(target.path));
   }
 
   // public: programmatic navigation helper (no immediate to(); router applies)
@@ -123,20 +125,31 @@ export class ActionRoute {
       const match = this.#findBestMatch(full);
       key = match?.key;
       if (!key)
-        throw new Error(`ActionRoute.navigate: route not registered: "${path}"`);
+        throw new Error(
+          `ActionRoute.navigate: route not registered: "${path}"`
+        );
     }
     const url =
-      this.#mode === "path" ? full + location.search + location.hash : "#" + full;
-    const tagged = { ...(history.state ?? {}), __ar: key }; // tag entry for smart end()
+      this.#mode === "path"
+        ? full + location.search + location.hash
+        : "#" + full;
+    const navInfo = this.#buildNavState(key); // tag entry for smart end()
+    const tagged = navInfo.state;
+    const current = this.#currentPath();
+    const sameKey = history.state?.__ar === key;
+    const shouldReplace = replace || (sameKey && current === full);
 
-      if (replace) {
-        history.replaceState(tagged, "", url);
-        this.#onNav();
-      } else {
-        history.pushState(tagged, "", url);
-      }
+    if (shouldReplace && navInfo.sameRoute) {
+      tagged.__arDepth = navInfo.existingDepth >= 0 ? navInfo.existingDepth : 0;
+    }
 
-    this.#onNav();
+    if (shouldReplace) {
+      history.replaceState(tagged, "", url);
+    } else {
+      history.pushState(tagged, "", url);
+    }
+
+    this.#onNav(full);
   }
 
   // public: utilities
@@ -173,17 +186,46 @@ export class ActionRoute {
     queueMicrotask(boundNav); // apply current URL once at startup
   }
 
-  static #onNav() {
+  static #onNav(pathOverride) {
     if (!this.#started) return;
 
-    const full = this.#currentPath();
+    const full =
+      pathOverride != null
+        ? this.#cleanPath(pathOverride)
+        : this.#currentPath();
+
+    const pending = this.#pendingClose;
+    if (pending) {
+      if (pending.awaitingPop) pending.awaitingPop = false;
+
+      if (pending.steps > 0) {
+        pending.steps -= 1;
+        if (pending.steps > 0) {
+          this.#drainPendingClose();
+          return;
+        }
+      }
+
+      const targetPath = this.#cleanPath(pending.targetPath ?? full);
+      const targetUrl =
+        typeof pending.targetUrl === "string" && pending.targetUrl.length > 0
+          ? pending.targetUrl
+          : this.#buildUrlForPath(targetPath);
+      const cleanedState = this.#cleanRouteState(history.state);
+
+      this.#pendingClose = null;
+
+      history.replaceState(cleanedState ?? null, "", targetUrl);
+      queueMicrotask(() => this.#onNav(targetPath));
+      return;
+    }
 
     for (const [key, rec] of this.#routes) {
       const match = rec.match?.(full);
 
       if (match?.matched) {
-        const payload = this.#buildPayload(key, full, match);
-
+        const previous = rec.last;
+        const payload = this.#buildPayload(key, full, match, previous);
         if (!rec.opened) {
           rec.opened = true;
           try {
@@ -193,9 +235,8 @@ export class ActionRoute {
           }
         }
 
-        const changed = !rec.last || rec.last.path !== payload.path;
-
-        if (rec.in && (changed || !rec.last)) {
+        if (rec.in) {
+          // Notify in() for every navigation that stays within this route
           try {
             rec.in(payload);
           } catch (e) {
@@ -219,7 +260,10 @@ export class ActionRoute {
   static #normalize(path) {
     if (typeof path !== "string") path = "" + path;
 
-    if (this.#base && (path === this.#base || path.startsWith(this.#base + "/"))) {
+    if (
+      this.#base &&
+      (path === this.#base || path.startsWith(this.#base + "/"))
+    ) {
       return this.#cleanPath(path);
     }
 
@@ -242,7 +286,16 @@ export class ActionRoute {
     if (!event || handlingNavigation) return;
 
     // Native Navigation API exposes canIntercept; respect it when present.
-    if (!isNavigationPolyfill && "canIntercept" in event && !event.canIntercept) {
+    if (
+      !isNavigationPolyfill &&
+      "canIntercept" in event &&
+      !event.canIntercept
+    ) {
+      return;
+    }
+
+    // Native Navigation API: let Back/Forward proceed without our own push.
+    if (!isNavigationPolyfill && event.navigationType === "traverse") {
       return;
     }
 
@@ -259,45 +312,63 @@ export class ActionRoute {
 
     if (url.origin !== location.origin) return;
 
-    const fullPath = this.#mode === "path"
-      ? this.#cleanPath(url.pathname)
-      : this.#cleanPath(url.hash ? url.hash.slice(1) : "/");
+    const fullPath =
+      this.#mode === "path"
+        ? this.#cleanPath(url.pathname)
+        : this.#cleanPath(url.hash ? url.hash.slice(1) : "/");
 
     const match = this.#findBestMatch(fullPath);
+
     if (!match) return;
 
     const replaceNav =
-      event.navigationType === "replace" ||
-      event.info?.replace === true;
+      event.navigationType === "replace" || event.info?.replace === true;
 
     const handler = () => {
       const current = this.#currentPath();
-      if (match.key === current) return;
+      const alreadyAtPath = current === fullPath;
 
       if (handlingNavigation) return;
       handlingNavigation = true;
-      const tagged = { ...(history.state ?? {}), __ar: match.key };
+      const navInfo = this.#buildNavState(match.key);
+      const tagged = navInfo.state;
 
-      const targetUrl = this.#mode === "path"
-        ? url.pathname + url.search + url.hash
-        : "#" + fullPath.replace(/^\//, "");
+      const targetUrl =
+        this.#mode === "path"
+          ? url.pathname + url.search + url.hash
+          : "#" + fullPath.replace(/^\//, "");
 
       try {
-        if (isNavigationPolyfill || replaceNav) {
+        const willReplace = alreadyAtPath || isNavigationPolyfill || replaceNav;
+        const preserveDepth = (alreadyAtPath || replaceNav) && navInfo.sameRoute;
+
+        if (preserveDepth) {
+          tagged.__arDepth = navInfo.existingDepth >= 0 ? navInfo.existingDepth : 0;
+        }
+
+        if (willReplace) {
           history.replaceState(tagged, "", targetUrl);
         } else {
           history.pushState(tagged, "", targetUrl);
-        }
+        }      
 
-        this.#onNav();
+        this.#onNav(fullPath);
       } finally {
         handlingNavigation = false;
       }
     };
 
     if (typeof event.intercept === "function") {
+      
       event.intercept({ handler });
+      return;
     }
+
+    if (typeof event.preventDefault === "function") {
+      event.preventDefault();
+    }
+
+    handler();
   }
   static #wrapMatcher(base, match) {
     const fb = this.#defaultMatch(base);
@@ -414,7 +485,7 @@ export class ActionRoute {
     };
   }
 
-  static #buildPayload(base, full, match) {
+  static #buildPayload(base, full, match, previous) {
     return {
       base,
       path: full,
@@ -422,7 +493,135 @@ export class ActionRoute {
       subpath: match.subpath,
       segments: match.segments,
       params: match.params,
+      previous,
     };
+  }
+
+  static #buildNavState(key) {
+    const baseState =
+      history.state && typeof history.state === "object"
+        ? { ...history.state }
+        : {};
+
+    const currentPath = this.#currentPath();
+    const currentUrl = location.pathname + location.search + location.hash;
+    const sameRoute = baseState.__ar === key;
+    const existingDepth = sameRoute && Number.isFinite(baseState.__arDepth)
+      ? Number(baseState.__arDepth)
+      : -1;
+
+    const rootPath =
+      sameRoute && typeof baseState.__arRootPath === "string"
+        ? baseState.__arRootPath
+        : currentPath;
+    const rootUrl =
+      sameRoute && typeof baseState.__arRootUrl === "string"
+        ? baseState.__arRootUrl
+        : currentUrl;
+
+    baseState.__ar = key;
+    baseState.__arPrevPath = currentPath;
+    baseState.__arPrevUrl = currentUrl;
+    baseState.__arRootPath = rootPath;
+    baseState.__arRootUrl = rootUrl;
+    baseState.__arDepth = sameRoute
+      ? existingDepth + 1
+      : 0;
+
+    return {
+      state: baseState,
+      sameRoute,
+      existingDepth,
+    };
+  }
+
+  static #cleanRouteState(state) {
+    if (!state) return state;
+    const cleaned = { ...state };
+    delete cleaned.__ar;
+    delete cleaned.__arPrevPath;
+    delete cleaned.__arPrevUrl;
+    delete cleaned.__arRootPath;
+    delete cleaned.__arRootUrl;
+    delete cleaned.__arDepth;
+    return cleaned;
+  }
+
+  static #pickCloseTarget(rec, state) {
+    const fallbackPath = this.#cleanPath(this.#fallbackPath());
+    const seen = new Set();
+    const candidates = [];
+
+    const buildUrl = (path, urlOverride) => {
+      if (typeof urlOverride === "string" && urlOverride.length > 0) {
+        return urlOverride;
+      }
+      return this.#buildUrlForPath(path);
+    };
+
+    const addCandidate = (path, urlOverride) => {
+      if (path == null && typeof urlOverride !== "string") return;
+      const cleanPath = path == null ? fallbackPath : this.#cleanPath(path);
+      if (seen.has(cleanPath)) return;
+      seen.add(cleanPath);
+      candidates.push({ path: cleanPath, url: buildUrl(cleanPath, urlOverride) });
+    };
+
+    if (state && (typeof state.__arRootPath === "string" || typeof state.__arRootUrl === "string")) {
+      addCandidate(state.__arRootPath ?? fallbackPath, state.__arRootUrl);
+    }
+
+    if (state && (typeof state.__arPrevPath === "string" || typeof state.__arPrevUrl === "string")) {
+      addCandidate(state.__arPrevPath ?? fallbackPath, state.__arPrevUrl);
+    }
+
+    addCandidate(fallbackPath);
+
+    if (fallbackPath !== "/") {
+      addCandidate("/");
+    }
+
+    if (!candidates.length) {
+      const defaultPath = "/";
+      candidates.push({ path: defaultPath, url: buildUrl(defaultPath) });
+    }
+
+    const matchesRoute = (path) => {
+      if (!rec?.match) return false;
+      try {
+        return !!rec.match(path)?.matched;
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+    };
+
+    const choice = candidates.find((candidate) => !matchesRoute(candidate.path));
+    return choice ?? candidates[candidates.length - 1];
+  }
+
+  static #fallbackPath() {
+    return this.#base || "/";
+  }
+
+  static #buildUrlForPath(path) {
+    const clean = this.#cleanPath(path);
+    if (this.#mode === "path") {
+      return clean;
+    }
+    const trimmed = clean.startsWith("/") ? clean.slice(1) : clean;
+    return trimmed ? "#" + trimmed : "#";
+  }
+
+
+  static #drainPendingClose() {
+    const pending = this.#pendingClose;
+    if (!pending) return;
+    if (pending.steps <= 0) return;
+    if (pending.awaitingPop) return;
+
+    pending.awaitingPop = true;
+    history.go(-1);
   }
 
   static #findBestMatch(full) {
