@@ -392,7 +392,9 @@ export class AutoComplete extends EventTarget {
       return /*html*/ `
       <div title="${i.tooltip || ""}" data-index="${index}" class="${`${
         cssClasses.item
-      } cat-${i.category} ${i.class ?? ""}`.trim()}">
+      } cat-${i.category} ${i.class ?? ""}`.trim()}"${
+        i.style ? ` style="${i.style}"` : ""
+      }>
         ${this.handleImageOrIcon(i)}
         <span class="text">${this.formatResultItem(
           i,
