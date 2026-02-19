@@ -199,11 +199,22 @@ export class AutoComplete extends EventTarget {
   }
 
   setText(options) {
-    if (this.container.autoCompleteInput) {
-      //this.control.autoCompleteInput.value = options.text;
-    } else {
+    let valueSet = false;
+    if (this.input) {
+      this.input.value = options.text;
+      valueSet = true;
+    } else if (this.container?.autoCompleteInput) {
+      this.container.autoCompleteInput.value = options.text;
+      valueSet = true;
+    } else if ("value" in this.container) {
       this.container.value = options.text;
+      valueSet = true;
     }
+
+    if (valueSet && this.input) {
+      this.input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     this.controller().hide("settext");
   }
 
