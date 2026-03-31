@@ -228,6 +228,38 @@ export class ActionRoute {
         const payload = this.#buildPayload(key, full, match, previous);
         if (!rec.opened) {
           rec.opened = true;
+
+          // Tag this entry if it was not already tagged by #onNavigationEvent.
+          // Handles full-page navigations (no Navigation API) and re-entry after
+          // external replaceState(null, …) has wiped the state.
+          if (!history.state?.__ar) {
+            const navInfo = this.#buildNavState(key);
+
+            // Try to recover a same-origin return URL from document.referrer.
+            try {
+              const ref = new URL(document.referrer);
+              if (ref.origin === location.origin) {
+                const refUrl  = ref.pathname + ref.search + ref.hash;
+                const refPath = this.#cleanPath(ref.pathname);
+                // Only use the referrer if it does NOT match this route (avoid returning to same view).
+                if (!rec.match?.(refPath)?.matched) {
+                  navInfo.state.__arRootUrl  = refUrl;
+                  navInfo.state.__arRootPath = refPath;
+                  navInfo.state.__arPrevUrl  = refUrl;
+                  navInfo.state.__arPrevPath = refPath;
+                }
+              }
+            } catch {
+              // Referrer unavailable or cross-origin — keep defaults from #buildNavState.
+            }
+
+            history.replaceState(
+              navInfo.state,
+              "",
+              location.pathname + location.search + location.hash,
+            );
+          }
+
           try {
             rec.to(payload);
           } catch (e) {

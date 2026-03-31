@@ -15,11 +15,8 @@ async function defineWebComponents(...args) {
   } = opts;
 
   const base = baseURL
-    ? new URL(
-        baseURL,
-        typeof location !== "undefined" ? location.href : import.meta.url
-      )
-    : new URL("./", import.meta.url);
+    ? new URL(baseURL, location.href)
+    : new URL("./", location.href);
 
   const toPascal = (tag) =>
     tag.toLowerCase().replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
@@ -349,11 +346,8 @@ export class AutoDefiner {
     } = opts;
 
     const base = baseURL
-      ? new URL(
-          baseURL,
-          typeof location !== "undefined" ? location.href : import.meta.url
-        )
-      : new URL("./", import.meta.url);
+      ? new URL(baseURL, location.href)
+      : new URL("./", location.href);
 
     const toPascal = (tag) =>
       tag.toLowerCase().replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
