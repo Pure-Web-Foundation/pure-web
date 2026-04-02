@@ -15,6 +15,8 @@ export class ActionRoute {
   static #started = false;
   static #navigationHandler;
   static #pendingClose = null;
+  static #queuedNavigation = null;
+  static #forcedRun = null;
 
   // public: configure before first create()
   static configure({ mode, base } = {}) {
@@ -56,6 +58,8 @@ export class ActionRoute {
     const match = this.#findBestMatch(full);
     if (!match)
       throw new Error(`ActionRoute.run: route not registered: "${path}"`);
+
+    this.#forcedRun = { key: match.key, path: full };
     this.navigate(full, { replace, baseKey: match.key });
   }
 
@@ -100,8 +104,11 @@ export class ActionRoute {
     const depth = Number.isFinite(st?.__arDepth) ? Number(st.__arDepth) : 0;
     const sameStep = !!st && st.__ar === key;
 
-    if (!replace && sameStep) {
-      const steps = Math.max(1, depth + 1);
+    const steps = Math.max(1, depth + 1);
+    const canTraverse =
+      !replace && sameStep && this.#canTraverseClose(rec, target, steps);
+
+    if (canTraverse) {
       this.#pendingClose = {
         key,
         targetPath: target.path,
@@ -113,6 +120,7 @@ export class ActionRoute {
       return;
     }
 
+    this.#pendingClose = null;
     history.replaceState(cleaned ?? null, "", target.url);
     queueMicrotask(() => this.#onNav(target.path));
   }
@@ -129,6 +137,17 @@ export class ActionRoute {
           `ActionRoute.navigate: route not registered: "${path}"`
         );
     }
+    if (this.#pendingClose?.awaitingPop) {
+      this.#queuedNavigation = { path: full, replace, baseKey: key };
+      return;
+    }
+
+    if (this.#pendingClose) {
+      this.#pendingClose = null;
+    }
+
+    this.#queuedNavigation = null;
+
     const url =
       this.#mode === "path"
         ? full + location.search + location.hash
@@ -214,9 +233,19 @@ export class ActionRoute {
       const cleanedState = this.#cleanRouteState(history.state);
 
       this.#pendingClose = null;
+      const queued = this.#queuedNavigation;
+      this.#queuedNavigation = null;
 
       history.replaceState(cleanedState ?? null, "", targetUrl);
-      queueMicrotask(() => this.#onNav(targetPath));
+      queueMicrotask(() => {
+        this.#onNav(targetPath);
+        if (queued) {
+          this.navigate(queued.path, {
+            replace: queued.replace,
+            baseKey: queued.baseKey,
+          });
+        }
+      });
       return;
     }
 
@@ -226,38 +255,42 @@ export class ActionRoute {
       if (match?.matched) {
         const previous = rec.last;
         const payload = this.#buildPayload(key, full, match, previous);
-        if (!rec.opened) {
-          rec.opened = true;
+        const forced = this.#consumeForcedRun(key, full);
 
-          // Tag this entry if it was not already tagged by #onNavigationEvent.
-          // Handles full-page navigations (no Navigation API) and re-entry after
-          // external replaceState(null, …) has wiped the state.
-          if (!history.state?.__ar) {
-            const navInfo = this.#buildNavState(key);
+        if (!rec.opened || forced) {
+          if (!rec.opened) {
+            rec.opened = true;
 
-            // Try to recover a same-origin return URL from document.referrer.
-            try {
-              const ref = new URL(document.referrer);
-              if (ref.origin === location.origin) {
-                const refUrl  = ref.pathname + ref.search + ref.hash;
-                const refPath = this.#cleanPath(ref.pathname);
-                // Only use the referrer if it does NOT match this route (avoid returning to same view).
-                if (!rec.match?.(refPath)?.matched) {
-                  navInfo.state.__arRootUrl  = refUrl;
-                  navInfo.state.__arRootPath = refPath;
-                  navInfo.state.__arPrevUrl  = refUrl;
-                  navInfo.state.__arPrevPath = refPath;
+            // Tag this entry if it was not already tagged by #onNavigationEvent.
+            // Handles full-page navigations (no Navigation API) and re-entry after
+            // external replaceState(null, …) has wiped the state.
+            if (!history.state?.__ar) {
+              const navInfo = this.#buildNavState(key);
+
+              // Try to recover a same-origin return URL from document.referrer.
+              try {
+                const ref = new URL(document.referrer);
+                if (ref.origin === location.origin) {
+                  const refUrl  = ref.pathname + ref.search + ref.hash;
+                  const refPath = this.#cleanPath(ref.pathname);
+                  // Only use the referrer if it does NOT match this route (avoid returning to same view).
+                  if (!rec.match?.(refPath)?.matched) {
+                    navInfo.state.__arRootUrl  = refUrl;
+                    navInfo.state.__arRootPath = refPath;
+                    navInfo.state.__arPrevUrl  = refUrl;
+                    navInfo.state.__arPrevPath = refPath;
+                  }
                 }
+              } catch {
+                // Referrer unavailable or cross-origin — keep defaults from #buildNavState.
               }
-            } catch {
-              // Referrer unavailable or cross-origin — keep defaults from #buildNavState.
-            }
 
-            history.replaceState(
-              navInfo.state,
-              "",
-              location.pathname + location.search + location.hash,
-            );
+              history.replaceState(
+                navInfo.state,
+                "",
+                location.pathname + location.search + location.hash,
+              );
+            }
           }
 
           try {
@@ -577,6 +610,72 @@ export class ActionRoute {
     delete cleaned.__arRootUrl;
     delete cleaned.__arDepth;
     return cleaned;
+  }
+
+  static #consumeForcedRun(key, full) {
+    const forced = this.#forcedRun;
+    if (!forced) return false;
+
+    const sameKey = forced.key === key;
+    const samePath = this.#cleanPath(forced.path) === this.#cleanPath(full);
+
+    if (!sameKey || !samePath) return false;
+
+    this.#forcedRun = null;
+    return true;
+  }
+
+  static #pathFromUrl(url) {
+    if (!url) return "/";
+    return this.#mode === "path"
+      ? this.#cleanPath(url.pathname)
+      : this.#cleanPath(url.hash ? url.hash.slice(1) : "/");
+  }
+
+  static #canTraverseClose(rec, target, steps) {
+    const nav = window.navigation;
+    if (!nav?.entries || !nav.currentEntry) return false;
+
+    let entries;
+    try {
+      entries = nav.entries();
+    } catch {
+      return false;
+    }
+
+    const currentIndex = nav.currentEntry?.index;
+    if (!Number.isInteger(currentIndex)) return false;
+
+    const safeSteps = Math.max(1, steps);
+    const targetIndex = currentIndex - safeSteps;
+    if (targetIndex < 0) return false;
+
+    const targetPath = this.#cleanPath(target?.path ?? this.#fallbackPath());
+
+    for (let index = targetIndex; index < currentIndex; index += 1) {
+      const entry = entries[index];
+      if (!entry?.url) return false;
+      if ("sameDocument" in entry && entry.sameDocument === false) {
+        return false;
+      }
+
+      let entryUrl;
+      try {
+        entryUrl = new URL(entry.url, location.href);
+      } catch {
+        return false;
+      }
+
+      if (entryUrl.origin !== location.origin) return false;
+
+      const entryPath = this.#pathFromUrl(entryUrl);
+      if (index === targetIndex) {
+        if (entryPath !== targetPath) return false;
+        if (rec?.match?.(entryPath)?.matched) return false;
+      }
+    }
+
+    return true;
   }
 
   static #pickCloseTarget(rec, state) {
