@@ -1,32 +1,178 @@
-/* eslint-disable no-console */
-// action-route.js
-// Tiny path-based action router for MPAs (no query param).
-// 1) Register on startup:  ActionRoute.create("/open-drawer", { to, from, in })
-// 2) Trigger later:        ActionRoute.run("/open-drawer")
-// Back/Forward restore automatically; reload restores if you're already on that path.
+/**
+ * @module ActionRoute
+ * @description Lightweight, locally-scoped route controller for browser UI state.
+ * `ActionRoute` only owns paths that have been explicitly registered via
+ * `ActionRoute.create()`. Unregistered URLs are left to normal browser navigation.
+ *
+ * Matching is path-based. When the current route stays active and only the
+ * query string or hash changes, the route's `in()` callback is invoked again
+ * with the latest URL details.
+ */
+
+/**
+ * Called once when navigation enters a route.
+ *
+ * @callback ActionRouteToHandler
+ * @param {ActionRoutePayload} payload Details about the current matched route and URL state.
+ * @returns {void}
+ */
+
+/**
+ * Called once when navigation leaves a route.
+ *
+ * @callback ActionRouteFromHandler
+ * @returns {void}
+ */
+
+/**
+ * Called for every navigation that remains within the same matched route,
+ * including query-string and hash-only changes.
+ *
+ * @callback ActionRouteInHandler
+ * @param {ActionRoutePayload} payload Details about the current matched route and URL state.
+ * @returns {void}
+ */
+
+/**
+ * Helper methods exposed to a custom matcher.
+ *
+ * @typedef {object} ActionRouteMatchHelpers
+ * @property {string} base Normalized registered base path.
+ * @property {(path: string) => boolean} isExact Returns `true` when `path` exactly matches the route base.
+ * @property {(path: string) => string} relative Returns the path remainder relative to the route base.
+ * @property {(path: string) => string[]} segments Returns decoded path segments for `path`.
+ */
+
+/**
+ * Match information returned by a custom matcher.
+ *
+ * @typedef {object} ActionRouteMatchResult
+ * @property {boolean} matched Whether the route owns the candidate path.
+ * @property {boolean} [exact=false] Whether the match is an exact path match.
+ * @property {string} [subpath=""] Path remainder relative to the route base.
+ * @property {string[]} [segments=[]] Decoded path segments for `subpath`.
+ * @property {Record<string, unknown>} [params={}] Optional values extracted by the matcher.
+ * @property {number} [score] Match priority; higher scores win.
+ */
+
+/**
+ * Optional custom path matcher for a route.
+ *
+ * @callback ActionRouteMatchFunction
+ * @param {string} full Normalized candidate path without query string or hash.
+ * @param {ActionRouteMatchHelpers} helpers Helper utilities for advanced matching.
+ * @returns {boolean|ActionRouteMatchResult|null|undefined}
+ */
+
+/**
+ * Lifecycle callbacks and options for a registered route.
+ *
+ * @typedef {object} ActionRouteDefinition
+ * @property {ActionRouteToHandler} to Called once when the route becomes active.
+ * @property {ActionRouteFromHandler} from Called once when the route stops being active.
+ * @property {ActionRouteInHandler} [in] Called on every navigation that remains within the owned route, including query/hash changes.
+ * @property {ActionRouteMatchFunction} [match] Optional custom matcher for advanced or catch-all behavior.
+ * @property {boolean} [intercept] Overrides whether normal link navigation to this route should be intercepted. Defaults to `true` for owned feature routes, and to `false` for an exact `"/"` route with no `in()` or custom `match` so dummy root routes do not hijack exits.
+ */
+
+/**
+ * Options for `ActionRoute.configure()`.
+ *
+ * @typedef {object} ActionRouteConfigureOptions
+ * @property {"path"|"hash"} [mode="path"] Whether routing should use `location.pathname` or `location.hash`.
+ * @property {string} [base=""] Optional base prefix applied to registered route paths.
+ */
+
+/**
+ * Options for navigation helper methods.
+ *
+ * @typedef {object} ActionRouteNavigationOptions
+ * @property {boolean} [replace=false] Reuse the current history entry instead of pushing a new one.
+ * @property {string} [baseKey] Internal route-key override used by the router itself. Application code should normally omit this.
+ */
+
+/**
+ * Details passed to a route's `to()` and `in()` callbacks.
+ *
+ * @typedef {object} ActionRoutePayload
+ * @property {string} base Normalized registered base path for the matched route.
+ * @property {string} path Current normalized matched path, without query string or hash.
+ * @property {string} url Current same-origin URL as `pathname + search + hash`.
+ * @property {string} pathname Current `window.location.pathname` value.
+ * @property {string} search Current `window.location.search` value.
+ * @property {URLSearchParams} searchParams Parsed query parameters for the current URL.
+ * @property {string} hash Current `window.location.hash` value.
+ * @property {boolean} exact Whether the route matched exactly.
+ * @property {string} subpath Path remainder relative to the route base.
+ * @property {string[]} segments Decoded segments for `subpath`.
+ * @property {Record<string, unknown>} params Optional matcher-supplied values.
+ * @property {ActionRoutePayload|null} previous Previous payload for this route, or `null` on first entry.
+ */
+
 const isNavigationPolyfill = !!window.navigation?.polyfill;
 let handlingNavigation = false;
 
+/**
+ * Locally-scoped action router for same-document UI flows.
+ *
+ * Routes are registered per path and remain callback-driven:
+ * - `to()` runs once when entering a route
+ * - `in()` runs on every navigation that stays within that route, including
+ *   query-string and hash changes
+ * - `from()` runs once when leaving the route
+ *
+ * This class does not claim unrelated URLs; unowned navigation is left to the browser.
+ * A dummy `"/"` route is not required for leaving an owned path; if an exact
+ * root route is registered only as a passive return target, it will not hijack
+ * normal exits unless `intercept: true` is explicitly requested.
+ *
+ * @example
+ * ActionRoute.create("/recipes", {
+ *   to: () => drawer.open(),
+ *   from: () => drawer.close(),
+ *   in: ({ searchParams }) => {
+ *     filterRecipes(searchParams.get("facet"));
+ *   },
+ * });
+ */
 export class ActionRoute {
   // config + state
   static #mode = "path"; // "path" | "hash"
   static #base = ""; // optional prefix, e.g. "/this-page"
-  static #routes = new Map(); // key -> { to, from, in, match, opened, last }
+  static #routes = new Map(); // key -> { to, from, in, match, intercept, opened, last }
   static #started = false;
   static #navigationHandler;
   static #pendingClose = null;
   static #queuedNavigation = null;
   static #forcedRun = null;
 
-  // public: configure before first create()
+  /**
+   * Configures the routing strategy before the first route is registered.
+   *
+   * Calls made after the router has started are ignored.
+   *
+   * @param {ActionRouteConfigureOptions} [options={}] Router configuration.
+   * @returns {void}
+   */
   static configure({ mode, base } = {}) {
     if (this.#started) return;
     if (mode === "path" || mode === "hash") this.#mode = mode;
     if (typeof base === "string") this.#base = base.replace(/\/$/, "");
   }
 
-  // public: register a route (does not run it)
-  static create(path, { to, from, in: inside, match } = {}) {
+  /**
+   * Registers or updates a locally-owned route.
+   *
+   * Registering a route does not force navigation to it. After registration,
+   * `ActionRoute` will react when the current URL matches the route's path or
+   * custom matcher.
+   *
+   * @param {string} path Route base path to own, such as `"/recipes"`.
+   * @param {ActionRouteDefinition} handlers Lifecycle handlers, match rules, and interception behavior.
+   * @returns {void}
+   * @throws {Error} Thrown when `path` is missing or when `to` / `from` are not functions.
+   */
+  static create(path, { to, from, in: inside, match, intercept } = {}) {
     if (!path)
       throw new Error(
         'ActionRoute.create(path, { to, from }) requires "path".'
@@ -41,18 +187,32 @@ export class ActionRoute {
 
     const key = this.#normalize(path);
     const rec = this.#routes.get(key) ?? { opened: false, last: null };
+    const defaultIntercept =
+      key !== "/" || typeof inside === "function" || typeof match === "function";
+
     rec.to = to;
     rec.from = from; // allow updating callbacks
     rec.in = typeof inside === "function" ? inside : null;
     rec.match = this.#wrapMatcher(key, match);
+    rec.intercept =
+      typeof intercept === "boolean" ? intercept : defaultIntercept;
     this.#routes.set(key, rec);
 
     // Re-evaluate routes now that configuration changed
     this.#onNav();
   }
 
-  // public: just navigate to the registered route.
-  // We treat navigation as the source of truth; router reacts & runs `to()`.
+  /**
+   * Navigates to a registered route and lets the router lifecycle react to the new URL.
+   *
+   * This is equivalent to making the URL the source of truth and then allowing
+   * the matching route's `to()` / `in()` handlers to run.
+   *
+   * @param {string} path Registered route path to activate.
+   * @param {ActionRouteNavigationOptions} [options={}] Navigation behavior.
+   * @returns {void}
+   * @throws {Error} Thrown when the target route has not been registered.
+   */
   static run(path, { replace = false } = {}) {
     const full = this.#normalize(path);
     const match = this.#findBestMatch(full);
@@ -63,7 +223,16 @@ export class ActionRoute {
     this.navigate(full, { replace, baseKey: match.key });
   }
 
-  // public: optional programmatic close (usually Back is enough)
+  /**
+   * Closes an active route and returns to its most appropriate previous URL.
+   *
+   * In most cases the browser Back button is sufficient; this helper exists for
+   * components that need an explicit close action.
+   *
+   * @param {string} [path] Specific route path to close. When omitted, the current active route is used.
+   * @param {ActionRouteNavigationOptions} [options={}] Close behavior.
+   * @returns {void}
+   */
   static end(path, { replace = false } = {}) {
     let key;
     let fullPath = null;
@@ -125,7 +294,17 @@ export class ActionRoute {
     queueMicrotask(() => this.#onNav(target.path));
   }
 
-  // public: programmatic navigation helper (no immediate to(); router applies)
+  /**
+   * Updates the browser URL for a registered route without directly invoking handlers.
+   *
+   * The router still processes the navigation immediately afterwards, which means
+   * the matched route's lifecycle callbacks remain the single source of truth.
+   *
+   * @param {string} path Target route path.
+   * @param {ActionRouteNavigationOptions} [options={}] Navigation behavior.
+   * @returns {void}
+   * @throws {Error} Thrown when the target route has not been registered.
+   */
   static navigate(path, { replace = false, baseKey } = {}) {
     const full = this.#normalize(path);
     let key = baseKey;
@@ -171,13 +350,29 @@ export class ActionRoute {
     this.#onNav(full);
   }
 
-  // public: utilities
+  /**
+   * Returns whether a route is currently active.
+   *
+   * @param {string} path Route path to check.
+   * @returns {boolean} `true` when the route is currently open.
+   */
   static isActive(path) {
     const full = this.#normalize(path);
     if (this.#routes.get(full)?.opened) return true;
     const match = this.#findBestMatch(full);
     return !!(match && this.#routes.get(match.key)?.opened);
   }
+  /**
+   * Binds a click handler that activates a registered route.
+   *
+   * This is a convenience wrapper around `ActionRoute.run()` for non-anchor UI
+   * controls or custom interactive elements.
+   *
+   * @param {Element} el Element that should trigger the route on click.
+   * @param {string} path Registered route path to activate.
+   * @param {ActionRouteNavigationOptions} [options={}] Navigation behavior.
+   * @returns {() => void} Cleanup function that removes the click listener.
+   */
   static link(el, path, { replace = false } = {}) {
     const handler = (e) => {
       e.preventDefault();
@@ -301,7 +496,8 @@ export class ActionRoute {
         }
 
         if (rec.in) {
-          // Notify in() for every navigation that stays within this route
+          // Notify in() for every navigation that stays within this route,
+          // including query-string and hash changes on the active path.
           try {
             rec.in(payload);
           } catch (e) {
@@ -384,7 +580,12 @@ export class ActionRoute {
 
     const match = this.#findBestMatch(fullPath);
 
+    // Leaving an owned route for an unowned or passive destination must fall
+    // back to normal browser navigation. No dummy `"/"` route is required.
     if (!match) return;
+
+    const matchedRoute = this.#routes.get(match.key);
+    if (!matchedRoute?.intercept) return;
 
     const replaceNav =
       event.navigationType === "replace" || event.info?.replace === true;
@@ -415,7 +616,7 @@ export class ActionRoute {
           history.replaceState(tagged, "", targetUrl);
         } else {
           history.pushState(tagged, "", targetUrl);
-        }      
+        }
 
         this.#onNav(fullPath);
       } finally {
@@ -435,6 +636,7 @@ export class ActionRoute {
 
     handler();
   }
+
   static #wrapMatcher(base, match) {
     const fb = this.#defaultMatch(base);
     const candidate = typeof match === "function" ? match : fb;
@@ -457,8 +659,9 @@ export class ActionRoute {
         return { matched: true, exact: true };
       }
 
+      // Keep `/` locally bound: by default it only owns the exact root path.
+      // Catch-all behavior should be explicit via a custom matcher.
       if (base === "/") {
-        if (full !== "/") return { matched: true, exact: false };
         return null;
       }
 
@@ -551,9 +754,18 @@ export class ActionRoute {
   }
 
   static #buildPayload(base, full, match, previous) {
+    const pathname = window.location.pathname;
+    const search = window.location.search;
+    const hash = window.location.hash;
+
     return {
       base,
       path: full,
+      url: pathname + search + hash,
+      pathname,
+      search,
+      searchParams: new URLSearchParams(search),
+      hash,
       exact: match.exact,
       subpath: match.subpath,
       segments: match.segments,
