@@ -83,20 +83,26 @@ AutoDefiner.define(["tag-name", ...])
 
 # ActionRoute 
 
-A tiny path-based action router for MPAs, that runs an action when the user navigates to and from a path.
+A tiny path-based action router for MPAs and same-document UI flows.
 
-1) Register on startup: ActionRoute.create("/open-drawer", { to, from })
-2) Trigger later: ActionRoute.run("/open-drawer")
+```js
+import { ActionRoute, ActionRouteController } from "pure-web/action-router";
+```
+
+1) Register on startup: `ActionRoute.create("/open-drawer", { to, from })`
+2) Or use lazy logic loading: `ActionRoute.create("/browse", new ActionRouteController("/assets/routes/browse-controller.js"))`
+3) Trigger later: `ActionRoute.run("/open-drawer")`
 
 Back/Forward restore automatically; reload restores if you're already on that path.
 
 ```js
-// show drawer with journal UI when the user navigates to /journal
 ActionRoute.create("/journal", {
   to: () => app.drawer.show(html`<journal-ui></journal-ui>`),
   from: () => app.drawer.close(),
-  in: (exact, segments) => {
+  in: ({ exact, segments }) => {
     // called when sub-routes within /journal/ are navigated to
   }
 });
 ```
+
+[More info](./action-route.md)

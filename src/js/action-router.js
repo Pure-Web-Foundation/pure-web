@@ -109,6 +109,264 @@
  * @property {ActionRoutePayload|null} previous Previous payload for this route, or `null` on first entry.
  */
 
+/**
+ * Accepted second argument for `ActionRoute.create()`.
+ *
+ * @typedef {ActionRouteDefinition|ActionRouteController} ActionRouteRegistration
+ */
+
+/**
+ * Normalizes a plain route definition or controller instance into callable handlers.
+ *
+ * @param {unknown} definition Route definition, module export, or controller instance.
+ * @param {{ allowControllerBase?: boolean }} [options]
+ * @returns {{
+ *   source: object,
+ *   to: ActionRouteToHandler|null,
+ *   from: ActionRouteFromHandler|null,
+ *   in: ActionRouteInHandler|null,
+ *   match: ActionRouteMatchFunction|undefined,
+ *   intercept: boolean|undefined,
+ *   hasCustomIn: boolean,
+ * }}
+ */
+function normalizeActionRouteSource(
+  definition,
+  { allowControllerBase = true } = {}
+) {
+  let source = definition ?? {};
+  if (
+    source &&
+    typeof source === "object" &&
+    "default" in source &&
+    source.default != null
+  ) {
+    source = source.default;
+  }
+
+  const target =
+    source && (typeof source === "object" || typeof source === "function")
+      ? source
+      : {};
+  const isController = target instanceof ActionRouteController;
+
+  const bindHandler = (name) => {
+    const handler = target?.[name];
+    if (typeof handler !== "function") return null;
+    if (
+      !allowControllerBase &&
+      isController &&
+      handler === ActionRouteController.prototype[name]
+    ) {
+      return null;
+    }
+    return handler.bind(target);
+  };
+
+  return {
+    source: target,
+    to: bindHandler("to"),
+    from: bindHandler("from"),
+    in: bindHandler("in"),
+    match:
+      typeof target?.match === "function" ? target.match.bind(target) : undefined,
+    intercept: typeof target?.intercept === "boolean" ? target.intercept : undefined,
+    hasCustomIn:
+      typeof target?.in === "function" &&
+      (!isController || target.in !== ActionRouteController.prototype.in),
+  };
+}
+
+/**
+ * Lazy route controller that can defer route logic until first use.
+ *
+ * Pass an instance to `ActionRoute.create(path, controller)` instead of a plain
+ * `{ to, from, in }` object. The base implementation imports the configured
+ * module the first time the route becomes active and then forwards lifecycle
+ * calls to the resolved handlers.
+ */
+export class ActionRouteController {
+  #modulePath = "";
+  #loadedRoute = null;
+  #loadingRoute = null;
+  #version = 0;
+  #active = false;
+
+  /**
+   * @param {string|URL} [modulePath] Optional module URL or specifier to lazy-load on first entry.
+   */
+  constructor(modulePath = "") {
+    this.#modulePath = modulePath;
+  }
+
+  /**
+   * Returns the configured lazy module specifier.
+   *
+   * @returns {string|URL}
+   */
+  get modulePath() {
+    return this.#modulePath;
+  }
+
+  /**
+   * Returns `true` after the route module has been loaded successfully.
+   *
+   * @returns {boolean}
+   */
+  get isLoaded() {
+    return !!this.#loadedRoute;
+  }
+
+  /**
+   * Preloads the controller logic without activating the route.
+   *
+   * @returns {Promise<unknown>}
+   */
+  preload() {
+    return this.load();
+  }
+
+  /**
+   * Loads and resolves the controller's route definition once.
+   *
+   * @returns {Promise<ReturnType<typeof normalizeActionRouteSource>>}
+   */
+  async load() {
+    if (this.#loadedRoute) return this.#loadedRoute;
+
+    if (!this.#loadingRoute) {
+      this.#loadingRoute = this.#loadRoute()
+        .then((resolved) => {
+          const route = normalizeActionRouteSource(resolved, {
+            allowControllerBase: false,
+          });
+          if (!route.to || !route.from) {
+            throw new Error(
+              'ActionRouteController.load requires the resolved module to provide both "to" and "from" functions.'
+            );
+          }
+          this.#loadedRoute = route;
+          return route;
+        })
+        .catch((error) => {
+          this.#loadingRoute = null;
+          throw error;
+        });
+    }
+
+    return this.#loadingRoute;
+  }
+
+  /**
+   * Resolves an imported module into a concrete route definition.
+   *
+   * Supported shapes include named exports, a default object, or a default
+   * class instance/class with `to()` and `from()` methods.
+   *
+   * @param {unknown} module Imported module namespace or default export.
+   * @returns {Promise<unknown>}
+   */
+  async resolve(module) {
+    let resolved =
+      module && typeof module === "object" && "default" in module
+        ? module.default ?? module
+        : module;
+
+    if (
+      typeof resolved === "function" &&
+      resolved.prototype &&
+      (resolved.prototype instanceof ActionRouteController ||
+        typeof resolved.prototype?.to === "function" ||
+        typeof resolved.prototype?.from === "function")
+    ) {
+      resolved = new resolved();
+    }
+
+    return resolved ?? {};
+  }
+
+  /**
+   * Handles route entry and lazily imports the backing module if needed.
+   *
+   * @param {ActionRoutePayload} payload Details about the current matched route and URL state.
+   * @returns {Promise<void>}
+   */
+  async to(payload) {
+    this.#active = true;
+    const version = ++this.#version;
+
+    try {
+      const route = await this.load();
+      if (!this.#active || version !== this.#version) return;
+      await route.to?.(payload);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /**
+   * Handles route exit.
+   *
+   * @returns {Promise<void>}
+   */
+  async from() {
+    this.#active = false;
+    const version = ++this.#version;
+
+    try {
+      const route = await this.load();
+      if (version !== this.#version) return;
+      await route.from?.();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /**
+   * Handles in-route updates for the active route.
+   *
+   * @param {ActionRoutePayload} payload Details about the current matched route and URL state.
+   * @returns {Promise<void>}
+   */
+  async in(payload) {
+    if (!this.#active) return;
+    const version = this.#version;
+
+    try {
+      const route = await this.load();
+      if (!this.#active || version !== this.#version) return;
+      await route.in?.(payload);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async #loadRoute() {
+    if (!this.#modulePath) {
+      return this;
+    }
+
+    const specifier = this.#resolveModuleSpecifier(this.#modulePath);
+    const imported = await import(specifier);
+    return this.resolve(imported);
+  }
+
+  #resolveModuleSpecifier(modulePath) {
+    if (modulePath instanceof URL) {
+      return modulePath.href;
+    }
+
+    const raw = String(modulePath ?? "").trim();
+    if (!raw) return raw;
+
+    try {
+      return new URL(raw, window.location.href).href;
+    } catch {
+      return raw;
+    }
+  }
+}
+
 const isNavigationPolyfill = !!window.navigation?.polyfill;
 let handlingNavigation = false;
 
@@ -168,15 +426,19 @@ export class ActionRoute {
    * custom matcher.
    *
    * @param {string} path Route base path to own, such as `"/recipes"`.
-   * @param {ActionRouteDefinition} handlers Lifecycle handlers, match rules, and interception behavior.
+   * @param {ActionRouteRegistration} handlers Lifecycle handlers, controller instance, match rules, and interception behavior.
    * @returns {void}
    * @throws {Error} Thrown when `path` is missing or when `to` / `from` are not functions.
    */
-  static create(path, { to, from, in: inside, match, intercept } = {}) {
+  static create(path, handlers = {}) {
     if (!path)
       throw new Error(
         'ActionRoute.create(path, { to, from }) requires "path".'
       );
+
+    const route = normalizeActionRouteSource(handlers);
+    const { to, from, in: inside, match, intercept, hasCustomIn } = route;
+
     if (typeof to !== "function" || typeof from !== "function") {
       throw new Error(
         'ActionRoute.create requires both "to" and "from" functions.'
@@ -188,7 +450,7 @@ export class ActionRoute {
     const key = this.#normalize(path);
     const rec = this.#routes.get(key) ?? { opened: false, last: null };
     const defaultIntercept =
-      key !== "/" || typeof inside === "function" || typeof match === "function";
+      key !== "/" || hasCustomIn || typeof match === "function";
 
     rec.to = to;
     rec.from = from; // allow updating callbacks
