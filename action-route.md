@@ -144,7 +144,8 @@ Besides a plain `{ to, from, in }` object, `ActionRoute.create()` also accepts a
 
 ```js
 const controller = new ActionRouteController(
-  "/assets/routes/browse-controller.js"
+  "/assets/routes/browse-controller.js",
+  { apiClient, featureFlag: true }
 );
 
 ActionRoute.create("/browse", controller);
@@ -159,21 +160,25 @@ The base `ActionRouteController`:
 - lazy-imports the module on first route entry
 - caches the resolved handlers
 - forwards `to()`, `from()`, and `in()` to the loaded route logic
+- exposes `controller.state` and also passes that shared state as the second hook argument
 - can be subclassed for custom behavior
 
 ### Lazy-loaded module example
 
 ```js
 // /assets/routes/browse-controller.js
-export function to({ segments }) {
+export function to({ segments }, { apiClient }) {
   app.browse.open(segments);
+  apiClient.prefetch("browse");
 }
 
-export function from() {
+export function from(state) {
+  state?.apiClient?.cancel?.("browse");
   app.browse.close();
 }
 
-export function inRoute({ searchParams }) {
+export function in({ searchParams }, state) {
+  state?.apiClient?.track?.("browse-filter", searchParams.get("q"));
   app.browse.filter(searchParams.get("q"));
 }
 ```
@@ -182,13 +187,16 @@ You can also export a default object:
 
 ```js
 export default {
-  to(payload) {
+  to(payload, state) {
     app.browse.open(payload.segments);
+    state?.apiClient?.prefetch?.("browse");
   },
-  from() {
+  from(state) {
+    state?.apiClient?.cancel?.("browse");
     app.browse.close();
   },
-  in(payload) {
+  in(payload, state) {
+    state?.apiClient?.track?.("browse-sync", payload.searchParams.toString());
     app.browse.sync(payload.searchParams);
   },
 };
@@ -198,7 +206,14 @@ Or a class / subclass instance:
 
 ```js
 export default class BrowseRoute {
-  to(payload) {}
+  constructor(state) {
+    this.state = state;
+  }
+
+  to(payload) {
+    this.state?.apiClient?.prefetch?.("browse");
+  }
+
   from() {}
   in(payload) {}
 }

@@ -14,6 +14,7 @@
  *
  * @callback ActionRouteToHandler
  * @param {ActionRoutePayload} payload Details about the current matched route and URL state.
+ * @param {unknown} [state] Optional shared controller state/config.
  * @returns {void}
  */
 
@@ -21,6 +22,7 @@
  * Called once when navigation leaves a route.
  *
  * @callback ActionRouteFromHandler
+ * @param {unknown} [state] Optional shared controller state/config.
  * @returns {void}
  */
 
@@ -30,6 +32,7 @@
  *
  * @callback ActionRouteInHandler
  * @param {ActionRoutePayload} payload Details about the current matched route and URL state.
+ * @param {unknown} [state] Optional shared controller state/config.
  * @returns {void}
  */
 
@@ -187,16 +190,30 @@ function normalizeActionRouteSource(
  */
 export class ActionRouteController {
   #modulePath = "";
+  #state = undefined;
   #loadedRoute = null;
   #loadingRoute = null;
   #version = 0;
   #active = false;
 
   /**
-   * @param {string|URL} [modulePath] Optional module URL or specifier to lazy-load on first entry.
+   * @param {string|URL|unknown} [modulePath] Optional module URL or specifier to lazy-load on first entry.
+   * When a non-string value is passed as the only argument, it is treated as shared controller state.
+   * @param {unknown} [state] Optional shared state/config forwarded to resolved route logic.
    */
-  constructor(modulePath = "") {
-    this.#modulePath = modulePath;
+  constructor(modulePath = "", state = undefined) {
+    const hasExplicitState = arguments.length > 1;
+    const looksLikeModulePath =
+      typeof modulePath === "string" || modulePath instanceof URL;
+
+    if (!hasExplicitState && !looksLikeModulePath) {
+      this.#modulePath = "";
+      this.#state = modulePath;
+      return;
+    }
+
+    this.#modulePath = modulePath ?? "";
+    this.#state = state;
   }
 
   /**
@@ -206,6 +223,15 @@ export class ActionRouteController {
    */
   get modulePath() {
     return this.#modulePath;
+  }
+
+  /**
+   * Returns the shared controller state/config.
+   *
+   * @returns {unknown}
+   */
+  get state() {
+    return this.#state;
   }
 
   /**
@@ -279,7 +305,24 @@ export class ActionRouteController {
         typeof resolved.prototype?.to === "function" ||
         typeof resolved.prototype?.from === "function")
     ) {
-      resolved = new resolved();
+      resolved = new resolved(this.#state);
+    }
+
+    if (
+      resolved &&
+      (typeof resolved === "object" || typeof resolved === "function")
+    ) {
+      try {
+        if (!("state" in resolved)) {
+          Object.defineProperty(resolved, "state", {
+            configurable: true,
+            enumerable: false,
+            get: () => this.#state,
+          });
+        }
+      } catch {
+        // Ignore non-extensible module namespace objects.
+      }
     }
 
     return resolved ?? {};
@@ -298,7 +341,7 @@ export class ActionRouteController {
     try {
       const route = await this.load();
       if (!this.#active || version !== this.#version) return;
-      await route.to?.(payload);
+      await route.to?.(payload, this.#state);
     } catch (error) {
       console.error(error);
     }
@@ -316,7 +359,7 @@ export class ActionRouteController {
     try {
       const route = await this.load();
       if (version !== this.#version) return;
-      await route.from?.();
+      await route.from?.(this.#state);
     } catch (error) {
       console.error(error);
     }
@@ -335,7 +378,7 @@ export class ActionRouteController {
     try {
       const route = await this.load();
       if (!this.#active || version !== this.#version) return;
-      await route.in?.(payload);
+      await route.in?.(payload, this.#state);
     } catch (error) {
       console.error(error);
     }

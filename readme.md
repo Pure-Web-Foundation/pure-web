@@ -90,7 +90,7 @@ import { ActionRoute, ActionRouteController } from "pure-web/action-router";
 ```
 
 1) Register on startup: `ActionRoute.create("/open-drawer", { to, from })`
-2) Or use lazy logic loading: `ActionRoute.create("/browse", new ActionRouteController("/assets/routes/browse-controller.js"))`
+2) Or use lazy logic loading: `ActionRoute.create("/browse", new ActionRouteController("/assets/routes/browse-controller.js", { apiClient }))`
 3) Trigger later: `ActionRoute.run("/open-drawer")`
 
 Back/Forward restore automatically; reload restores if you're already on that path.
